@@ -6,6 +6,9 @@ defineProps<{
   authToken: string
   request: { state: string; client_id: string }
 }>()
+
+// Helper jika ingin membuat URL manual berdasarkan base path aplikasi
+const authorizeUrl = route ? route('passport.authorizations.approve') : '/oauth/authorize'
 </script>
 
 <template>
@@ -20,7 +23,8 @@ defineProps<{
 
       <div class="flex justify-center gap-4">
         <!-- Form Setuju (Approve) -->
-        <form method="POST" action="/oauth/authorize">
+        <!-- ✅ Gunakan route('passport.authorizations.approve') -->
+        <form method="POST" :action="route('passport.authorizations.approve')">
           <input type="hidden" name="_token" :value="$page.props.csrf_token || ''" />
           <input type="hidden" name="state" :value="request.state" />
           <input type="hidden" name="client_id" :value="request.client_id" />
@@ -29,8 +33,10 @@ defineProps<{
         </form>
 
         <!-- Form Tolak (Deny) -->
-        <form method="POST" action="/oauth/authorize">
+        <!-- ✅ Gunakan route('passport.authorizations.deny') -->
+        <form method="POST" :action="route('passport.authorizations.deny')">
           <input type="hidden" name="_method" value="DELETE" />
+          <input type="hidden" name="_token" :value="$page.props.csrf_token || ''" />
           <input type="hidden" name="state" :value="request.state" />
           <input type="hidden" name="client_id" :value="request.client_id" />
           <input type="hidden" name="auth_token" :value="authToken" />
