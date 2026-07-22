@@ -27,7 +27,7 @@ export default defineConfig({
         },
     },
     ssr: {
-        noExternal: ['@varlet/ui'],
+        noExternal: ['@varlet/ui', 'dayjs'],
     },
     server: {
         watch: {
