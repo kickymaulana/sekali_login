@@ -5,6 +5,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Admin\OAuthClientController;
+use App\Http\Controllers\Admin\UserController;
+use App\Http\Controllers\Admin\RoleController;
 
 
 // Route untuk Guest (Belum Login)
@@ -50,4 +53,15 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+});
+
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    // OAuth Clients CRUD
+    Route::resource('clients', OAuthClientController::class)->except(['create', 'edit']);
+
+    // User Management CRUD
+    Route::resource('users', UserController::class)->except(['create', 'edit']);
+
+    // Roles & Permissions CRUD
+    Route::resource('roles', RoleController::class)->except(['create', 'edit']);
 });

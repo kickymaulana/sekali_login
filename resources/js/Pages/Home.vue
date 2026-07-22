@@ -47,28 +47,28 @@ const summaryData = computed(() => [
     count: props.summary?.activeApps ?? 1,
     icon: 'cellphone',
     color: '#6366f1',
-    bgColor: '#e0e7ff'
+    bgColor: '#e0e7ff',
   },
   {
     title: 'Sesi Aktif',
     count: props.summary?.activeSessions ?? 1,
     icon: 'star',
     color: '#10b981',
-    bgColor: '#d1fae5'
+    bgColor: '#d1fae5',
   },
   {
     title: 'Token Diterbitkan',
     count: props.summary?.tokensIssued ?? 0,
     icon: 'code-json',
     color: '#f59e0b',
-    bgColor: '#fef3c7'
+    bgColor: '#fef3c7',
   },
   {
     title: 'Role Diterima',
     count: props.summary?.rolesCount ?? props.auth.user?.roles.length ?? 0,
     icon: 'download',
     color: '#8b5cf6',
-    bgColor: '#ede9fe'
+    bgColor: '#ede9fe',
   },
 ])
 
@@ -77,12 +77,21 @@ const handleLogout = () => {
 }
 
 const handleAddClient = () => {
-  alert('Fitur Pendaftaran Aplikasi Klien Baru akan datang!')
+  if (isAdmin.value) {
+    router.get(route('admin.clients.index'))
+  } else {
+    alert('Fitur Pendaftaran Aplikasi Klien Baru hanya untuk Admin!')
+  }
 }
 
 const handleTabChange = (index: number) => {
   // Logika navigasi antar tab mobile jika diperlukan
 }
+
+// Helper untuk mengecek apakah user punya role 'admin'
+const isAdmin = computed(() => {
+  return props.auth.user?.roles?.includes('admin') ?? false
+})
 </script>
 
 <template>
@@ -144,7 +153,46 @@ const handleTabChange = (index: number) => {
         </div>
       </div>
 
-      <!-- Quick Action Category Scroll (Clean Native Varlet FAB) -->
+      <!-- Khusus Tampilan Admin (Navigasi CRUD) -->
+      <div v-if="isAdmin" class="admin-section">
+        <div class="section-header">
+          <h3 class="section-title">Panel Admin SSO 🛠️</h3>
+        </div>
+
+        <div class="admin-menu-grid">
+          <Link :href="route('admin.clients.index')" class="admin-menu-card">
+            <div class="menu-icon-box bg-indigo">
+              <var-icon name="apps-box" :size="24" color="#4f46e5" />
+            </div>
+            <div class="menu-info">
+              <h4>OAuth Clients</h4>
+              <p>Kelola Client ID & Secret App Eksternal</p>
+            </div>
+          </Link>
+
+          <Link :href="route('admin.users.index')" class="admin-menu-card">
+            <div class="menu-icon-box bg-emerald">
+              <var-icon name="account-group" :size="24" color="#10b981" />
+            </div>
+            <div class="menu-info">
+              <h4>User Management</h4>
+              <p>Tambah, Edit & Reset Password Pengguna</p>
+            </div>
+          </Link>
+
+          <Link :href="route('admin.roles.index')" class="admin-menu-card">
+            <div class="menu-icon-box bg-purple">
+              <var-icon name="shield-account" :size="24" color="#8b5cf6" />
+            </div>
+            <div class="menu-info">
+              <h4>Roles & Permissions</h4>
+              <p>Atur Hak Akses Spatie Secara Terpusat</p>
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      <!-- Quick Action Category Scroll -->
       <div class="section-header">
         <h3 class="section-title">Akses Cepat SSO</h3>
       </div>
@@ -277,7 +325,6 @@ const handleTabChange = (index: number) => {
   line-height: 1.2;
 }
 
-/* Mengubah max-width dari 500px menjadi 100% / 1200px agar responsif mengikuti layar */
 .android-content {
   flex: 1;
   overflow-y: auto;
@@ -342,7 +389,6 @@ const handleTabChange = (index: number) => {
   cursor: pointer;
 }
 
-/* Grid statistik: 2 Kolom di HP, 4 Kolom di Tablet/Desktop */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -389,6 +435,59 @@ const handleTabChange = (index: number) => {
   font-size: 12px;
   color: #64748b;
   font-weight: 500;
+}
+
+/* Panel Admin Styles */
+.admin-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.admin-menu-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+.admin-menu-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+}
+
+.menu-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bg-indigo { background-color: #e0e7ff; }
+.bg-emerald { background-color: #d1fae5; }
+.bg-purple { background-color: #ede9fe; }
+
+.menu-info h4 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.menu-info p {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #64748b;
 }
 
 .category-scroll {
