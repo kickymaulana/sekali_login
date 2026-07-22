@@ -45,28 +45,28 @@ const summaryData = computed(() => [
   {
     title: 'App Terhubung',
     count: props.summary?.activeApps ?? 1,
-    icon: 'apps',
+    icon: 'cellphone',
     color: '#6366f1',
     bgColor: '#e0e7ff'
   },
   {
     title: 'Sesi Aktif',
     count: props.summary?.activeSessions ?? 1,
-    icon: 'devices',
+    icon: 'star',
     color: '#10b981',
     bgColor: '#d1fae5'
   },
   {
     title: 'Token Diterbitkan',
     count: props.summary?.tokensIssued ?? 0,
-    icon: 'key-outline',
+    icon: 'code-json',
     color: '#f59e0b',
     bgColor: '#fef3c7'
   },
   {
     title: 'Role Diterima',
     count: props.summary?.rolesCount ?? props.auth.user?.roles.length ?? 0,
-    icon: 'shield-account-outline',
+    icon: 'download',
     color: '#8b5cf6',
     bgColor: '#ede9fe'
   },
@@ -77,7 +77,6 @@ const handleLogout = () => {
 }
 
 const handleAddClient = () => {
-  // Aksi shortcut tambah client app baru (jika ada)
   alert('Fitur Pendaftaran Aplikasi Klien Baru akan datang!')
 }
 
@@ -90,26 +89,33 @@ const handleTabChange = (index: number) => {
   <Head title="SSO Portal - Dashboard" />
 
   <div class="android-layout">
-    <!-- Top App Bar -->
-    <header class="top-app-bar">
-      <div class="user-greeting">
-        <var-avatar
-          src="https://varletjs.org/cat.jpg"
-          size="small"
-          round
-        />
-        <div class="user-info">
-          <span class="greeting-subtitle">Pusat Autentikasi SSO 👋</span>
-          <h2 class="user-name">{{ props.auth.user?.name || 'Kicky Maulana' }}</h2>
+    <!-- Top App Bar Menggunakan Component Varlet -->
+    <var-app-bar
+      type="surface"
+      :elevation="false"
+      border
+      class="custom-app-bar"
+    >
+      <template #left>
+        <div class="user-greeting">
+          <var-avatar
+            src="https://varletjs.org/cat.jpg"
+            size="small"
+            round
+          />
+          <div class="user-info">
+            <span class="greeting-subtitle">Pusat Autentikasi SSO 👋</span>
+            <h2 class="user-name">{{ props.auth.user?.name || 'Kicky Maulana' }}</h2>
+          </div>
         </div>
-      </div>
+      </template>
 
-      <div class="header-actions">
-        <var-button round transparent @click="handleLogout">
+      <template #right>
+        <var-button round text @click="handleLogout">
           <var-icon name="logout" :size="22" color="#64748b" />
         </var-button>
-      </div>
-    </header>
+      </template>
+    </var-app-bar>
 
     <main class="android-content">
       <!-- Welcome Hero Banner -->
@@ -138,34 +144,37 @@ const handleTabChange = (index: number) => {
         </div>
       </div>
 
-      <!-- Quick Action Category Scroll -->
+      <!-- Quick Action Category Scroll (Clean Native Varlet FAB) -->
       <div class="section-header">
         <h3 class="section-title">Akses Cepat SSO</h3>
       </div>
 
       <div class="category-scroll">
         <div class="category-item">
-          <div class="cat-icon bg-indigo">
-            <var-icon name="shield-lock-outline" />
-          </div>
+          <var-button type="primary" fab tonal :elevation="false">
+            <var-icon name="checkbox-marked-circle" :size="24" />
+          </var-button>
           <span>Ubah Password</span>
         </div>
+
         <div class="category-item">
-          <div class="cat-icon bg-purple">
-            <var-icon name="account-group-outline" />
-          </div>
+          <var-button type="info" fab tonal :elevation="false">
+            <var-icon name="cake-variant" :size="24" />
+          </var-button>
           <span>Role & Izin</span>
         </div>
+
         <div class="category-item">
-          <div class="cat-icon bg-green">
-            <var-icon name="laptop" />
-          </div>
+          <var-button type="success" fab tonal :elevation="false">
+            <var-icon name="card-account-details-outline" :size="24" />
+          </var-button>
           <span>Sesi Login</span>
         </div>
+
         <div class="category-item">
-          <div class="cat-icon bg-orange">
-            <var-icon name="code-json" />
-          </div>
+          <var-button type="warning" fab tonal :elevation="false">
+            <var-icon name="code-json" :size="24" />
+          </var-button>
           <span>API Tokens</span>
         </div>
       </div>
@@ -197,7 +206,7 @@ const handleTabChange = (index: number) => {
               <span class="request-category">
                 <var-icon name="calendar-month-outline" :size="14" /> Diberi Izin: {{ app.connectedAt }}
               </span>
-              <var-button size="mini" type="danger" outline round>
+              <var-button size="mini" type="danger">
                 Revoke
               </var-button>
             </div>
@@ -214,8 +223,8 @@ const handleTabChange = (index: number) => {
       @fab-click="handleAddClient"
     >
       <var-bottom-navigation-item label="Beranda" icon="home-outline" />
-      <var-bottom-navigation-item label="Aplikasi" icon="apps" />
-      <var-bottom-navigation-item label="Keamanan" icon="shield-outline" />
+      <var-bottom-navigation-item label="Aplikasi" icon="cellphone" />
+      <var-bottom-navigation-item label="Keamanan" icon="lock" />
       <var-bottom-navigation-item label="Profil" icon="account-circle-outline" />
 
       <template #fab>
@@ -234,24 +243,21 @@ const handleTabChange = (index: number) => {
   font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1e293b;
   overflow: hidden;
+  width: 100%;
 }
 
-.top-app-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px 12px 20px;
-  background-color: #ffffff;
-  border-bottom: 1px solid #f1f5f9;
+.custom-app-bar {
   position: sticky;
   top: 0;
   z-index: 10;
+  padding: 8px 16px;
+  width: 100%;
 }
 
 .user-greeting {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 .user-info {
   display: flex;
@@ -261,52 +267,57 @@ const handleTabChange = (index: number) => {
   font-size: 11px;
   color: #64748b;
   font-weight: 500;
+  line-height: 1.2;
 }
 .user-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 700;
   margin: 0;
   color: #0f172a;
+  line-height: 1.2;
 }
 
+/* Mengubah max-width dari 500px menjadi 100% / 1200px agar responsif mengikuti layar */
 .android-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px 20px 100px 20px;
+  padding: 20px 24px 100px 24px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  max-width: 500px;
+  gap: 20px;
+  max-width: 1200px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
-/* Gradient Banner untuk SSO Theme */
 .welcome-card {
   background: linear-gradient(135deg, #4f46e5, #7c3aed);
   border-radius: 20px;
-  padding: 20px;
+  padding: 24px;
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   box-shadow: 0 10px 20px -5px rgba(79, 70, 229, 0.35);
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .welcome-text h3 {
   margin: 0 0 6px 0;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 .welcome-text p {
   margin: 0;
-  font-size: 12px;
+  font-size: 13px;
   opacity: 0.9;
   line-height: 1.4;
-  max-width: 230px;
+  max-width: 500px;
 }
 .welcome-icon {
-  font-size: 48px !important;
+  font-size: 56px !important;
   opacity: 0.25;
 }
 
@@ -331,15 +342,23 @@ const handleTabChange = (index: number) => {
   cursor: pointer;
 }
 
+/* Grid statistik: 2 Kolom di HP, 4 Kolom di Tablet/Desktop */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
+
+@media (min-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
 .stat-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 14px;
+  padding: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -348,8 +367,8 @@ const handleTabChange = (index: number) => {
 }
 
 .stat-icon-wrapper {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -361,22 +380,22 @@ const handleTabChange = (index: number) => {
   flex-direction: column;
 }
 .stat-count {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 800;
   color: #0f172a;
   line-height: 1.2;
 }
 .stat-title {
-  font-size: 11px;
+  font-size: 12px;
   color: #64748b;
   font-weight: 500;
 }
 
 .category-scroll {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   overflow-x: auto;
-  padding-bottom: 4px;
+  padding: 4px 0;
   scrollbar-width: none;
 }
 .category-scroll::-webkit-scrollbar {
@@ -386,37 +405,22 @@ const handleTabChange = (index: number) => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  min-width: 72px;
+  gap: 8px;
+  min-width: 80px;
   cursor: pointer;
 }
-.cat-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 20px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-}
 .category-item span {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
   color: #475569;
   text-align: center;
+  white-space: nowrap;
 }
-
-.bg-indigo { background-color: #4f46e5; }
-.bg-purple { background-color: #8b5cf6; }
-.bg-green { background-color: #10b981; }
-.bg-orange { background-color: #f59e0b; }
 
 .empty-card {
   background: #ffffff;
   border-radius: 16px;
-  padding: 24px;
+  padding: 32px;
   text-align: center;
   border: 1px dashed #cbd5e1;
   color: #94a3b8;
@@ -460,7 +464,7 @@ const handleTabChange = (index: number) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 11px;
+  font-size: 12px;
   color: #94a3b8;
 }
 .request-category {
