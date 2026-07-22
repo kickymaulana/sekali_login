@@ -18,7 +18,8 @@ interface Props {
 const props = defineProps<Props>()
 
 const handleLogout = () => {
-  router.post('/logout')
+  // ✅ Menggunakan helper route('logout') dari Ziggy
+  router.post(route('logout'))
 }
 </script>
 

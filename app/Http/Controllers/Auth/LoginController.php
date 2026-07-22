@@ -9,17 +9,11 @@ use Inertia\Inertia;
 
 class LoginController extends Controller
 {
-    /**
-     * Tampilkan halaman login.
-     */
     public function create()
     {
         return Inertia::render('Auth/Login');
     }
 
-    /**
-     * Proses autentikasi user.
-     */
     public function store(Request $request)
     {
         $credentials = $request->validate([
@@ -34,7 +28,11 @@ class LoginController extends Controller
         if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
 
-            return redirect()->intended('/');
+            // 🟢 Ambil URL intended (tujuan awal user sebelum di-intercept halaman login)
+            $redirectUrl = session()->pull('url.intended', route('dashboard'));
+
+            // 🟢 Gunakan Inertia::location untuk memicu Full Browser Redirect (bukan AJAX)
+            return Inertia::location($redirectUrl);
         }
 
         return back()->withErrors([
@@ -42,9 +40,6 @@ class LoginController extends Controller
         ])->onlyInput('email');
     }
 
-    /**
-     * Proses logout.
-     */
     public function destroy(Request $request)
     {
         Auth::logout();

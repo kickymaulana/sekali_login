@@ -28,7 +28,7 @@ const submit = () => {
     <var-card class="w-full max-w-md p-6 shadow-md rounded-2xl bg-white">
       <div class="text-center mb-6">
         <h1 class="text-2xl font-bold text-slate-800">SSO SERVER</h1>
-        <p class="text-sm text-slate-500 mt-1">Silakan masuk ke akun Anda</p>
+        <p class="text-sm text-slate-500 mt-1">Sekali Login Untuk Semua Aplikasi</p>
       </div>
 
       <form @submit.prevent="submit" class="space-y-4">
