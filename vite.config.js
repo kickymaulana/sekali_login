@@ -19,7 +19,9 @@ export default defineConfig({
         }),
         tailwindcss(),
         vue(),
-        inertia(),
+        inertia({
+            ssr: false,
+        }),
     ],
     resolve: {
         alias: {
