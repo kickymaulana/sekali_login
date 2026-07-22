@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -19,6 +20,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Passport::authorizationView(
+            fn ($parameters) => Inertia::render('Auth/OAuth/Authorize', [
+                'request' => $parameters['request'],
+                'authToken' => $parameters['authToken'],
+                'client' => $parameters['client'],
+                'user' => $parameters['user'],
+                'scopes' => $parameters['scopes'],
+            ])
+        );
     }
 }
