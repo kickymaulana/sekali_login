@@ -23,6 +23,26 @@ class UserController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $roles = Role::pluck('name');
+
+        return Inertia::render('Admin/Users/Create', [
+            'roles' => $roles
+        ]);
+    }
+
+    public function edit(User $user)
+    {
+        $user->load('roles');
+        $roles = Role::pluck('name');
+
+        return Inertia::render('Admin/Users/Edit', [
+            'user' => $user,
+            'roles' => $roles
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -40,7 +60,7 @@ class UserController extends Controller
 
         $user->assignRole($request->role);
 
-        return redirect()->back();
+        return redirect()->route('admin.users.index');
     }
 
     public function update(Request $request, User $user)
@@ -62,13 +82,13 @@ class UserController extends Controller
 
         $user->syncRoles([$request->role]);
 
-        return redirect()->back();
+        return redirect()->route('admin.users.index');
     }
 
     public function destroy(User $user)
     {
         $user->delete();
-        return redirect()->back();
+        return redirect()->route('admin.users.index');
     }
 }
 

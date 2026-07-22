@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Head, useForm, router, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
 interface PermissionItem { id: number; name: string }
@@ -11,53 +10,12 @@ const props = defineProps<{
   permissions: PermissionItem[]
 }>()
 
-const showModal = ref(false)
-const editingRole = ref<RoleItem | null>(null)
-
-const form = useForm({
-  name: '',
-  permissions: [] as string[],
-})
-
-const openCreateModal = () => {
-  editingRole.value = null
-  form.reset()
-  form.clearErrors()
-  showModal.value = true
-}
-
-const openEditModal = (role: RoleItem) => {
-  editingRole.value = role
-  form.clearErrors()
-  form.name = role.name
-  form.permissions = role.permissions.map((p) => p.name)
-  showModal.value = true
-}
-
-const submitForm = () => {
-  if (editingRole.value) {
-    form.put(route('admin.roles.update', editingRole.value.id), {
-      onSuccess: () => {
-        showModal.value = false
-        Snackbar.success('Role berhasil diperbarui')
-      },
-    })
-  } else {
-    form.post(route('admin.roles.store'), {
-      onSuccess: () => {
-        showModal.value = false
-        Snackbar.success('Role baru berhasil dibuat')
-      },
-    })
-  }
-}
-
-const confirmDelete = (roleId: number) => {
+const confirmDelete = (role: RoleItem) => {
   Dialog({
     title: 'Hapus Role?',
-    message: 'User yang memiliki role ini mungkin akan kehilangan hak akses.',
+    message: `Role "${role.name}" akan dihapus. User yang memiliki role ini mungkin akan kehilangan hak akses.`,
     onConfirm: () => {
-      router.delete(route('admin.roles.destroy', roleId), {
+      router.delete(route('admin.roles.destroy', role.id), {
         onSuccess: () => Snackbar.success('Role berhasil dihapus'),
       })
     },
@@ -69,19 +27,17 @@ const confirmDelete = (roleId: number) => {
   <Head title="Roles & Permissions - SSO Admin" />
 
   <div class="android-layout">
-    <!-- Header App Bar -->
     <header class="top-app-bar">
-      <Link href="/home" class="back-button">
+      <Link :href="route('dashboard')" class="back-button">
         <var-icon name="chevron-left" :size="24" color="#0f172a" />
       </Link>
       <h1 class="app-bar-title">Roles & Permissions</h1>
-      <var-button text round @click="openCreateModal">
+      <Link :href="route('admin.roles.create')" class="add-button">
         <var-icon name="plus" :size="22" color="#4f46e5" />
-      </var-button>
+      </Link>
     </header>
 
     <main class="android-content">
-      <!-- Hero -->
       <div class="hero-card">
         <div class="hero-text">
           <h3>Hak Akses & Perizinan 🛡️</h3>
@@ -90,14 +46,19 @@ const confirmDelete = (roleId: number) => {
         <var-icon name="shield-account" class="hero-icon" />
       </div>
 
-      <!-- Empty State -->
+      <div class="action-bar">
+        <Link :href="route('admin.roles.create')" class="action-btn">
+          <var-icon name="plus" :size="18" />
+          Tambah Role
+        </Link>
+      </div>
+
       <div v-if="!roles.length" class="empty-card">
         <var-icon name="shield-off" :size="48" color="#cbd5e1" />
         <p>Belum ada role yang dibuat.</p>
-        <var-button type="primary" round @click="openCreateModal">Tambah Role Baru</var-button>
+        <Link :href="route('admin.roles.create')" class="empty-link">Tambah Role Baru</Link>
       </div>
 
-      <!-- Role Cards -->
       <div v-else class="roles-grid">
         <div v-for="role in roles" :key="role.id" class="role-card">
           <div class="role-header">
@@ -107,10 +68,7 @@ const confirmDelete = (roleId: number) => {
               </div>
               <h3>{{ role.name }}</h3>
             </div>
-            <div class="role-actions">
-              <var-button size="mini" type="warning" text @click="openEditModal(role)">Edit</var-button>
-              <var-button size="mini" type="danger" text @click="confirmDelete(role.id)">Hapus</var-button>
-            </div>
+            <Link :href="route('admin.roles.edit', role.id)" class="action-link edit-link">Edit</Link>
           </div>
 
           <div class="permissions-section">
@@ -125,33 +83,6 @@ const confirmDelete = (roleId: number) => {
         </div>
       </div>
     </main>
-
-    <!-- Modal Form -->
-    <var-dialog v-model:show="showModal" :title="editingRole ? 'Edit Role' : 'Tambah Role Baru'">
-      <form @submit.prevent="submitForm" class="dialog-form">
-        <var-input v-model="form.name" label="Nama Role" placeholder="Contoh: manager / admin" :error-message="form.errors.name">
-          <template #prepend-icon><var-icon name="shield-outline" color="#6366f1" /></template>
-        </var-input>
-
-        <div class="perms-picker">
-          <label class="picker-label">Pilih Permissions:</label>
-          <div class="checkbox-grid">
-            <var-checkbox
-              v-for="perm in permissions"
-              :key="perm.id"
-              v-model="form.permissions"
-              :checked-value="perm.name"
-            >
-              {{ perm.name }}
-            </var-checkbox>
-          </div>
-        </div>
-      </form>
-      <template #actions>
-        <var-button text @click="showModal = false">Batal</var-button>
-        <var-button type="primary" :loading="form.processing" @click="submitForm">Simpan</var-button>
-      </template>
-    </var-dialog>
   </div>
 </template>
 
@@ -177,7 +108,7 @@ const confirmDelete = (roleId: number) => {
   z-index: 10;
 }
 
-.back-button {
+.back-button, .add-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -232,6 +163,29 @@ const confirmDelete = (roleId: number) => {
   opacity: 0.25;
 }
 
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background: #4338ca;
+}
+
 .empty-card {
   background: #ffffff;
   border-radius: 20px;
@@ -244,6 +198,12 @@ const confirmDelete = (roleId: number) => {
   align-items: center;
   gap: 12px;
   font-size: 14px;
+}
+
+.empty-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .roles-grid {
@@ -301,9 +261,20 @@ const confirmDelete = (roleId: number) => {
   text-transform: capitalize;
 }
 
-.role-actions {
-  display: flex;
-  gap: 4px;
+.action-link {
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.edit-link {
+  color: #d97706;
+}
+
+.edit-link:hover {
+  background-color: #fef3c7;
 }
 
 .permissions-section {
@@ -330,32 +301,5 @@ const confirmDelete = (roleId: number) => {
   font-size: 12px;
   color: #cbd5e1;
   font-style: italic;
-}
-
-.dialog-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 12px 0;
-}
-
-.perms-picker {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.picker-label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #334155;
-}
-
-.checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-  max-height: 200px;
-  overflow-y: auto;
 }
 </style>

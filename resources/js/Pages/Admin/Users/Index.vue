@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Head, useForm, router, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
 interface UserItem {
@@ -15,60 +14,12 @@ const props = defineProps<{
   roles: string[]
 }>()
 
-const showModal = ref(false)
-const editingUser = ref<UserItem | null>(null)
-
-const form = useForm({
-  name: '',
-  email: '',
-  password: '',
-  role: '',
-})
-
-const openCreateModal = () => {
-  editingUser.value = null
-  form.reset()
-  form.clearErrors()
-  if (props.roles && props.roles.length > 0) {
-    form.role = props.roles[0]
-  }
-  showModal.value = true
-}
-
-const openEditModal = (user: UserItem) => {
-  editingUser.value = user
-  form.clearErrors()
-  form.name = user.name
-  form.email = user.email
-  form.password = ''
-  form.role = user.roles[0]?.name || (props.roles[0] ?? '')
-  showModal.value = true
-}
-
-const submitForm = () => {
-  if (editingUser.value) {
-    form.put(route('admin.users.update', editingUser.value.id), {
-      onSuccess: () => {
-        showModal.value = false
-        Snackbar.success('Data user berhasil diperbarui')
-      },
-    })
-  } else {
-    form.post(route('admin.users.store'), {
-      onSuccess: () => {
-        showModal.value = false
-        Snackbar.success('User baru berhasil ditambahkan')
-      },
-    })
-  }
-}
-
-const confirmDelete = (userId: number) => {
+const confirmDelete = (user: UserItem) => {
   Dialog({
     title: 'Hapus User?',
-    message: 'User ini tidak akan bisa login lagi ke seluruh aplikasi SSO.',
+    message: `User "${user.name}" tidak akan bisa login lagi ke seluruh aplikasi SSO.`,
     onConfirm: () => {
-      router.delete(route('admin.users.destroy', userId), {
+      router.delete(route('admin.users.destroy', user.id), {
         onSuccess: () => Snackbar.success('User berhasil dihapus'),
       })
     },
@@ -80,19 +31,17 @@ const confirmDelete = (userId: number) => {
   <Head title="Kelola Users - SSO Admin" />
 
   <div class="android-layout">
-    <!-- Header App Bar -->
     <header class="top-app-bar">
-      <Link href="/home" class="back-button">
+      <Link :href="route('dashboard')" class="back-button">
         <var-icon name="chevron-left" :size="24" color="#0f172a" />
       </Link>
       <h1 class="app-bar-title">Manajemen User</h1>
-      <var-button text round @click="openCreateModal">
+      <Link :href="route('admin.users.create')" class="add-button">
         <var-icon name="account-plus" :size="22" color="#4f46e5" />
-      </var-button>
+      </Link>
     </header>
 
     <main class="android-content">
-      <!-- Hero -->
       <div class="hero-card">
         <div class="hero-text">
           <h3>Kelola Pengguna 👥</h3>
@@ -101,7 +50,13 @@ const confirmDelete = (userId: number) => {
         <var-icon name="account-group" class="hero-icon" />
       </div>
 
-      <!-- Users Table -->
+      <div class="action-bar">
+        <Link :href="route('admin.users.create')" class="action-btn">
+          <var-icon name="account-plus" :size="18" />
+          Tambah User
+        </Link>
+      </div>
+
       <div class="table-card">
         <var-table>
           <thead>
@@ -121,17 +76,17 @@ const confirmDelete = (userId: number) => {
                   {{ role.name }}
                 </var-chip>
               </td>
-              <td style="text-align: right">
-                <var-button size="mini" type="warning" text @click="openEditModal(user)">Edit</var-button>
-                <var-button size="mini" type="danger" text @click="confirmDelete(user.id)">Hapus</var-button>
+              <td style="text-align: right" class="action-cell">
+                <Link :href="route('admin.users.edit', user.id)" class="action-link edit-link">Edit</Link>
+                <var-button size="mini" type="danger" text @click="confirmDelete(user)">Hapus</var-button>
               </td>
             </tr>
-            <!-- Empty Row -->
             <tr v-if="!users.data.length">
               <td colspan="4" class="empty-row">
                 <div class="empty-state">
                   <var-icon name="account-off" :size="36" color="#cbd5e1" />
                   <p>Belum ada pengguna terdaftar.</p>
+                  <Link :href="route('admin.users.create')" class="empty-link">Tambah User Baru</Link>
                 </div>
               </td>
             </tr>
@@ -139,34 +94,6 @@ const confirmDelete = (userId: number) => {
         </var-table>
       </div>
     </main>
-
-    <!-- Modal Form -->
-    <var-dialog v-model:show="showModal" :title="editingUser ? 'Edit User' : 'Tambah User Baru'">
-      <form @submit.prevent="submitForm" class="dialog-form">
-        <var-input v-model="form.name" label="Nama Lengkap" placeholder="Masukkan nama lengkap" :error-message="form.errors.name">
-          <template #prepend-icon><var-icon name="account-outline" color="#6366f1" /></template>
-        </var-input>
-        <var-input v-model="form.email" label="Email" placeholder="contoh@email.com" :error-message="form.errors.email">
-          <template #prepend-icon><var-icon name="email-outline" color="#6366f1" /></template>
-        </var-input>
-        <var-input
-          type="password"
-          v-model="form.password"
-          :label="editingUser ? 'Password Baru (Kosongkan jika tidak diubah)' : 'Password'"
-          placeholder="Minimal 8 karakter"
-          :error-message="form.errors.password"
-        >
-          <template #prepend-icon><var-icon name="lock-outline" color="#6366f1" /></template>
-        </var-input>
-        <var-select v-model="form.role" label="Pilih Role Spatie" :error-message="form.errors.role">
-          <var-option v-for="r in roles" :key="r" :label="r" :value="r" />
-        </var-select>
-      </form>
-      <template #actions>
-        <var-button text @click="showModal = false">Batal</var-button>
-        <var-button type="primary" :loading="form.processing" @click="submitForm">Simpan</var-button>
-      </template>
-    </var-dialog>
   </div>
 </template>
 
@@ -192,7 +119,7 @@ const confirmDelete = (userId: number) => {
   z-index: 10;
 }
 
-.back-button {
+.back-button, .add-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -247,6 +174,29 @@ const confirmDelete = (userId: number) => {
   opacity: 0.25;
 }
 
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background: #4338ca;
+}
+
 .table-card {
   background: #ffffff;
   border-radius: 16px;
@@ -260,11 +210,25 @@ const confirmDelete = (userId: number) => {
   color: #0f172a;
 }
 
-.dialog-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 12px 0;
+.action-cell {
+  white-space: nowrap;
+}
+
+.action-link {
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.edit-link {
+  color: #d97706;
+}
+
+.edit-link:hover {
+  background-color: #fef3c7;
 }
 
 .empty-row {
@@ -278,6 +242,13 @@ const confirmDelete = (userId: number) => {
   align-items: center;
   gap: 8px;
   color: #94a3b8;
+  font-size: 13px;
+}
+
+.empty-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
   font-size: 13px;
 }
 </style>

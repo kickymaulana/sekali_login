@@ -85,7 +85,9 @@ const handleAddClient = () => {
 }
 
 const handleTabChange = (index: number) => {
-  // Logika navigasi antar tab mobile jika diperlukan
+  if (index === 3) {
+    router.get(route('profile'))
+  }
 }
 
 // Helper untuk mengecek apakah user punya role 'admin'

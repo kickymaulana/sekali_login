@@ -53,15 +53,31 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+
+    Route::get('/profile', function (Request $request) {
+        $user = $request->user();
+
+        return Inertia::render('Profile', [
+            'auth' => [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'roles' => $user->getRoleNames(),
+                    'permissions' => $user->getAllPermissions()->pluck('name'),
+                ],
+            ],
+        ]);
+    })->name('profile');
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // OAuth Clients CRUD
-    Route::resource('clients', OAuthClientController::class)->except(['create', 'edit']);
+    Route::resource('clients', OAuthClientController::class);
 
     // User Management CRUD
-    Route::resource('users', UserController::class)->except(['create', 'edit']);
+    Route::resource('users', UserController::class);
 
     // Roles & Permissions CRUD
-    Route::resource('roles', RoleController::class)->except(['create', 'edit']);
+    Route::resource('roles', RoleController::class);
 });

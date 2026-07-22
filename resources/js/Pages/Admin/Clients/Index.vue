@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Head, useForm, router, Link } from '@inertiajs/vue3'
+import { Head, Link, router } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
 interface OAuthClient {
@@ -23,59 +22,12 @@ const getRedirectUrl = (client: OAuthClient): string => {
   return client.redirect_uris || client.redirect || ''
 }
 
-const showCreateModal = ref(false)
-const editingClient = ref<OAuthClient | null>(null)
-
-const form = useForm({
-  name: '',
-  redirect: '',
-})
-
-const openCreateModal = () => {
-  editingClient.value = null
-  form.reset()
-  form.clearErrors()
-  showCreateModal.value = true
-}
-
-const openEditModal = (client: OAuthClient) => {
-  editingClient.value = client
-  form.clearErrors()
-  form.name = client.name
-  form.redirect = getRedirectUrl(client)
-  showCreateModal.value = true
-}
-
-const submitForm = () => {
-  if (editingClient.value) {
-    form.put(route('admin.clients.update', editingClient.value.id), {
-      onSuccess: () => {
-        showCreateModal.value = false
-        Snackbar.success('Aplikasi berhasil diperbarui')
-      },
-      onError: (errors) => {
-        console.error('Error Validasi Update:', errors)
-      }
-    })
-  } else {
-    form.post(route('admin.clients.store'), {
-      onSuccess: () => {
-        showCreateModal.value = false
-        Snackbar.success('Aplikasi klien berhasil didaftarkan')
-      },
-      onError: (errors) => {
-        console.error('Error Validasi Store:', errors)
-      }
-    })
-  }
-}
-
-const confirmDelete = (clientId: string) => {
+const confirmDelete = (client: OAuthClient) => {
   Dialog({
     title: 'Hapus OAuth Client?',
-    message: 'Aplikasi yang dihapus tidak akan bisa menggunakan SSO lagi.',
+    message: `Aplikasi "${client.name}" yang dihapus tidak akan bisa menggunakan SSO lagi.`,
     onConfirm: () => {
-      router.delete(route('admin.clients.destroy', clientId), {
+      router.delete(route('admin.clients.destroy', client.id), {
         onSuccess: () => Snackbar.success('Client berhasil dihapus'),
       })
     },
@@ -87,19 +39,17 @@ const confirmDelete = (clientId: string) => {
   <Head title="Kelola OAuth Clients - SSO Admin" />
 
   <div class="android-layout">
-    <!-- Header App Bar -->
     <header class="top-app-bar">
-      <Link href="/home" class="back-button">
+      <Link :href="route('dashboard')" class="back-button">
         <var-icon name="chevron-left" :size="24" color="#0f172a" />
       </Link>
       <h1 class="app-bar-title">OAuth Clients</h1>
-      <var-button text round @click="openCreateModal">
+      <Link :href="route('admin.clients.create')" class="add-button">
         <var-icon name="plus" :size="22" color="#4f46e5" />
-      </var-button>
+      </Link>
     </header>
 
     <main class="android-content">
-      <!-- Hero -->
       <div class="hero-card">
         <div class="hero-text">
           <h3>Aplikasi Terintegrasi 🔗</h3>
@@ -108,14 +58,19 @@ const confirmDelete = (clientId: string) => {
         <var-icon name="apps-box" class="hero-icon" />
       </div>
 
-      <!-- Empty State -->
+      <div class="action-bar">
+        <Link :href="route('admin.clients.create')" class="action-btn">
+          <var-icon name="plus" :size="18" />
+          Tambah App
+        </Link>
+      </div>
+
       <div v-if="!clients.length" class="empty-card">
         <var-icon name="apps-box" :size="48" color="#cbd5e1" />
         <p>Belum ada aplikasi klien terdaftar.</p>
-        <var-button type="primary" round @click="openCreateModal">Tambah App Baru</var-button>
+        <Link :href="route('admin.clients.create')" class="empty-link">Tambah App Baru</Link>
       </div>
 
-      <!-- Client Cards Grid -->
       <div v-else class="clients-grid">
         <div v-for="client in clients" :key="client.id" class="client-card">
           <div class="card-header">
@@ -138,28 +93,12 @@ const confirmDelete = (clientId: string) => {
             </div>
           </div>
           <div class="card-footer">
-            <var-button size="small" type="warning" text @click="openEditModal(client)">Edit</var-button>
-            <var-button size="small" type="danger" text @click="confirmDelete(client.id)">Hapus</var-button>
+            <Link :href="route('admin.clients.edit', client.id)" class="action-link edit-link">Edit</Link>
+            <var-button size="small" type="danger" text @click="confirmDelete(client)">Hapus</var-button>
           </div>
         </div>
       </div>
     </main>
-
-    <!-- Modal Form -->
-    <var-dialog v-model:show="showCreateModal" :title="editingClient ? 'Edit Client' : 'Daftarkan App Baru'">
-      <form @submit.prevent="submitForm" id="clientForm" class="dialog-form">
-        <var-input v-model="form.name" label="Nama Aplikasi" placeholder="Contoh: Portal Absensi" :error-message="form.errors.name">
-          <template #prepend-icon><var-icon name="apps-box" color="#6366f1" /></template>
-        </var-input>
-        <var-input v-model="form.redirect" label="Callback / Redirect URL" placeholder="https://app.com/auth/callback" :error-message="form.errors.redirect">
-          <template #prepend-icon><var-icon name="link-variant" color="#6366f1" /></template>
-        </var-input>
-      </form>
-      <template #actions>
-        <var-button text @click="showCreateModal = false">Batal</var-button>
-        <var-button type="primary" :loading="form.processing" @click="submitForm">Simpan</var-button>
-      </template>
-    </var-dialog>
   </div>
 </template>
 
@@ -185,7 +124,7 @@ const confirmDelete = (clientId: string) => {
   z-index: 10;
 }
 
-.back-button {
+.back-button, .add-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -240,6 +179,29 @@ const confirmDelete = (clientId: string) => {
   opacity: 0.25;
 }
 
+.action-bar {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #4f46e5;
+  color: #ffffff;
+  padding: 8px 18px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.action-btn:hover {
+  background: #4338ca;
+}
+
 .empty-card {
   background: #ffffff;
   border-radius: 20px;
@@ -252,6 +214,12 @@ const confirmDelete = (clientId: string) => {
   align-items: center;
   gap: 12px;
   font-size: 14px;
+}
+
+.empty-link {
+  color: #4f46e5;
+  font-weight: 600;
+  text-decoration: none;
 }
 
 .clients-grid {
@@ -345,10 +313,21 @@ const confirmDelete = (clientId: string) => {
   padding-top: 12px;
 }
 
-.dialog-form {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 12px 0;
+.action-link {
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: none;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.edit-link {
+  color: #d97706;
+}
+
+.edit-link:hover {
+  background-color: #fef3c7;
 }
 </style>

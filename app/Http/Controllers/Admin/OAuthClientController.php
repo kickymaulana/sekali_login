@@ -22,6 +22,20 @@ class OAuthClientController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        return Inertia::render('Admin/Clients/Create');
+    }
+
+    public function edit($clientId)
+    {
+        $client = Client::where('id', $clientId)->firstOrFail();
+
+        return Inertia::render('Admin/Clients/Edit', [
+            'client' => $client
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -42,7 +56,7 @@ class OAuthClientController extends Controller
             'revoked' => false,
         ]);
 
-        return redirect()->back()->with('success', 'OAuth Client berhasil dibuat!');
+        return redirect()->route('admin.clients.index')->with('success', 'OAuth Client berhasil dibuat!');
     }
 
     public function update(Request $request, $clientId)
@@ -61,7 +75,7 @@ class OAuthClientController extends Controller
             ]);
         }
 
-        return redirect()->back();
+        return redirect()->route('admin.clients.index');
     }
 
     public function destroy($clientId)
@@ -72,6 +86,6 @@ class OAuthClientController extends Controller
             $client->delete();
         }
 
-        return redirect()->back();
+        return redirect()->route('admin.clients.index');
     }
 }

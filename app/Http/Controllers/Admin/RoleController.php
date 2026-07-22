@@ -21,6 +21,26 @@ class RoleController extends Controller
         ]);
     }
 
+    public function create()
+    {
+        $permissions = Permission::all();
+
+        return Inertia::render('Admin/Roles/Create', [
+            'permissions' => $permissions
+        ]);
+    }
+
+    public function edit(Role $role)
+    {
+        $role->load('permissions');
+        $permissions = Permission::all();
+
+        return Inertia::render('Admin/Roles/Edit', [
+            'role' => $role,
+            'permissions' => $permissions
+        ]);
+    }
+
     public function store(Request $request)
     {
         $request->validate([
@@ -34,7 +54,7 @@ class RoleController extends Controller
             $role->syncPermissions($request->permissions);
         }
 
-        return redirect()->back();
+        return redirect()->route('admin.roles.index');
     }
 
     public function update(Request $request, Role $role)
@@ -47,13 +67,13 @@ class RoleController extends Controller
         $role->update(['name' => $request->name]);
         $role->syncPermissions($request->permissions ?? []);
 
-        return redirect()->back();
+        return redirect()->route('admin.roles.index');
     }
 
     public function destroy(Role $role)
     {
         $role->delete();
-        return redirect()->back();
+        return redirect()->route('admin.roles.index');
     }
 }
 
