@@ -105,6 +105,8 @@ const isAdmin = computed(() => {
       type="surface"
       :elevation="false"
       border
+      fixed
+      placeholder
       class="custom-app-bar"
     >
       <template #left>
@@ -269,6 +271,8 @@ const isAdmin = computed(() => {
     <var-bottom-navigation
       v-model:active="activeTab"
       class="bottom-nav-fixed"
+      fixed
+      placeholder
       @change="handleTabChange"
       @fab-click="handleAddClient"
     >
@@ -286,22 +290,15 @@ const isAdmin = computed(() => {
 
 <style scoped>
 .android-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
   background-color: #f8fafc;
   font-family: Roboto, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #1e293b;
-  overflow: hidden;
   width: 100%;
 }
 
 .custom-app-bar {
-  position: sticky;
-  top: 0;
-  z-index: 10;
   padding: 8px 16px;
-  width: 100%;
 }
 
 .user-greeting {
@@ -328,9 +325,7 @@ const isAdmin = computed(() => {
 }
 
 .android-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px 24px 100px 24px;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -575,12 +570,7 @@ const isAdmin = computed(() => {
 }
 
 .bottom-nav-fixed {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 999 !important;
-  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.06);
   border-top: 1px solid #f1f5f9;
 }
 </style>

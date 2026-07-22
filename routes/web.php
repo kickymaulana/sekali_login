@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
 use App\Http\Controllers\Auth\RegisterController;
 use Illuminate\Http\Request;
@@ -69,6 +71,27 @@ Route::middleware('auth')->group(function () {
             ],
         ]);
     })->name('profile');
+
+    Route::get('/password/change', function (Request $request) {
+        return Inertia::render('Auth/ChangePassword');
+    })->name('password.change');
+
+    Route::post('/password/change', function (Request $request) {
+        $request->validate([
+            'current_password' => ['required', function ($attribute, $value, $fail) use ($request) {
+                if (! Hash::check($value, $request->user()->password)) {
+                    $fail('Password saat ini tidak sesuai.');
+                }
+            }],
+            'password' => ['required', 'confirmed', Password::min(8)],
+        ]);
+
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return redirect()->route('profile')->with('success', 'Password berhasil diubah!');
+    });
 });
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
