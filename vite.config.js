@@ -26,6 +26,9 @@ export default defineConfig({
             '@': path.resolve(__dirname, './resources/js'),
         },
     },
+    ssr: {
+        noExternal: ['@varlet/ui'],
+    },
     server: {
         watch: {
             ignored: ['**/storage/framework/views/**'],
