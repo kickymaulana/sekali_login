@@ -36,5 +36,11 @@ class AppServiceProvider extends ServiceProvider
                 'scopes' => $parameters['scopes'],
             ])
         );
+        // 🟢 Daftarkan View Otorisasi MCP untuk Passport
+        if (class_exists(Passport::class)) {
+            Passport::authorizationView(function ($parameters) {
+                return view('mcp.authorize', $parameters);
+            });
+        }
     }
 }
