@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useForm, Head } from '@inertiajs/vue3'
+import { useForm, Head, Link } from '@inertiajs/vue3'
 import { Snackbar } from '@varlet/ui'
 
 const form = useForm({
@@ -71,6 +71,13 @@ const submit = () => {
             Masuk
           </var-button>
         </div>
+        <!-- Tambahkan ini di bawah submit button pada Login.vue -->
+<div class="mt-4 text-center text-sm text-slate-500">
+  Belum punya akun?
+  <Link :href="route('register')" class="text-indigo-600 font-bold hover:underline">
+    Daftar Sekarang
+  </Link>
+</div>
       </form>
     </var-card>
   </div>
