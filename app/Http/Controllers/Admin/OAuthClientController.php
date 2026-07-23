@@ -98,11 +98,9 @@ class OAuthClientController extends Controller
 
     public function showSecret($clientId)
     {
-        $client = Client::where('id', $clientId)->firstOrFail();
-
         return response()->json([
-            'secret' => $client->secret,
-        ]);
+            'error' => 'Client Secret telah dienkripsi dan tidak bisa ditampilkan. Gunakan fitur Regenerate Secret untuk membuat secret baru.',
+        ], 400);
     }
 
     public function regenerateSecret(Request $request, $clientId)
@@ -110,7 +108,8 @@ class OAuthClientController extends Controller
         $client = Client::where('id', $clientId)->firstOrFail();
 
         $newSecret = Str::random(40);
-        $client->update(['secret' => $newSecret]);
+        $client->secret = $newSecret;
+        $client->save();
 
         return response()->json([
             'secret' => $newSecret,

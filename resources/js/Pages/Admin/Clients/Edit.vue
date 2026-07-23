@@ -41,22 +41,12 @@ const submit = () => {
   })
 }
 
-const toggleSecret = async () => {
+const toggleSecret = () => {
   if (showSecret.value) {
     showSecret.value = false
     return
   }
-  loadingSecret.value = true
-  try {
-    const res = await fetch(route('admin.clients.secret', props.client.id))
-    const data = await res.json()
-    secretText.value = data.secret
-    showSecret.value = true
-  } catch {
-    Snackbar.error('Gagal memuat secret')
-  } finally {
-    loadingSecret.value = false
-  }
+  Snackbar.warning('Secret tidak bisa ditampilkan karena sudah dienkripsi. Gunakan "Regenerate Secret" untuk membuat yang baru.')
 }
 
 const copySecret = async () => {
@@ -148,22 +138,24 @@ const confirmDelete = () => {
 
           <!-- Client Secret -->
           <div class="secret-section">
-            <var-button type="info" text block @click="toggleSecret" :loading="loadingSecret" class="secret-toggle">
-              <var-icon :name="showSecret ? 'eye-off' : 'eye'" :size="16" />
-              {{ showSecret ? 'Sembunyikan Secret' : 'Tampilkan Client Secret' }}
+            <div class="secret-hint">
+              <var-icon name="lock" :size="18" color="#f59e0b" />
+              <span>Client Secret dienkripsi untuk keamanan. Tidak bisa ditampilkan lagi setelah dibuat.</span>
+            </div>
+            <var-button type="warning" text block @click="confirmRegenerate" :loading="loadingRegenerate" class="regenerate-btn">
+              <var-icon name="refresh" :size="16" />
+              Regenerate Client Secret
             </var-button>
 
             <div v-if="showSecret" class="secret-reveal">
+              <p class="secret-notice">Secret baru berhasil dibuat!</p>
               <div class="secret-value-row">
                 <code class="secret-value">{{ secretText }}</code>
                 <var-button size="small" round text @click="copySecret">
                   <var-icon name="content-copy" :size="16" color="#6366f1" />
                 </var-button>
               </div>
-              <var-button type="warning" text size="small" @click="confirmRegenerate" :loading="loadingRegenerate" class="regenerate-btn">
-                <var-icon name="refresh" :size="14" />
-                Regenerate Secret
-              </var-button>
+              <p class="secret-warning">Simpan secret ini. Hanya ditampilkan sekali dan tidak bisa dilihat lagi.</p>
             </div>
           </div>
 
@@ -329,23 +321,42 @@ const confirmDelete = () => {
 .secret-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.secret-toggle {
+.secret-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: #fef3c7;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 12px;
+  color: #92400e;
+  line-height: 1.4;
+}
+
+.regenerate-btn {
   font-size: 12px !important;
   font-weight: 600 !important;
   gap: 6px !important;
 }
 
 .secret-reveal {
-  background: #f8fafc;
+  background: #f0fdf4;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  padding: 12px;
+  border: 2px solid #bbf7d0;
+  padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.secret-notice {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #166534;
 }
 
 .secret-value-row {
@@ -367,9 +378,10 @@ const confirmDelete = () => {
   line-height: 1.5;
 }
 
-.regenerate-btn {
-  align-self: flex-start;
-  font-size: 11px !important;
-  gap: 4px !important;
+.secret-warning {
+  margin: 0;
+  font-size: 11px;
+  color: #dc2626;
+  font-weight: 500;
 }
 </style>
