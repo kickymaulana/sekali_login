@@ -27,10 +27,13 @@ class RegisterController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nik' => ['required', 'string', 'max:50', 'unique:'.User::class],
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
+            'nik.required' => 'NIK wajib diisi.',
+            'nik.unique' => 'NIK ini sudah terdaftar.',
             'name.required' => 'Nama lengkap wajib diisi.',
             'email.required' => 'Email wajib diisi.',
             'email.email' => 'Format email tidak valid.',
@@ -41,6 +44,7 @@ class RegisterController extends Controller
 
         // 1. Buat User Baru
         $user = User::create([
+            'nik' => $request->nik,
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),

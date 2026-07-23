@@ -3,6 +3,7 @@ import { useForm, Head, Link } from '@inertiajs/vue3'
 import { Snackbar } from '@varlet/ui'
 
 const form = useForm({
+  nik: '',
   name: '',
   email: '',
   password: '',
@@ -12,15 +13,11 @@ const form = useForm({
 const submit = () => {
   form.post(route('register'), {
     onError: () => {
-      if (form.errors.name) {
-        Snackbar.error(form.errors.name)
-      } else if (form.errors.email) {
-        Snackbar.error(form.errors.email)
-      } else if (form.errors.password) {
-        Snackbar.error(form.errors.password)
-      } else if (form.errors.password_confirmation) {
-        Snackbar.error(form.errors.password_confirmation)
-      }
+      if (form.errors.nik) Snackbar.error(form.errors.nik)
+      else if (form.errors.name) Snackbar.error(form.errors.name)
+      else if (form.errors.email) Snackbar.error(form.errors.email)
+      else if (form.errors.password) Snackbar.error(form.errors.password)
+      else if (form.errors.password_confirmation) Snackbar.error(form.errors.password_confirmation)
     },
   })
 }
@@ -52,6 +49,20 @@ const submit = () => {
       <!-- Form Section -->
       <div class="form-container">
         <form @submit.prevent="submit" class="space-y-4">
+          <!-- NIK Input -->
+          <var-input
+            v-model="form.nik"
+            label="NIK (Nomor Induk)"
+            placeholder="Masukkan NIK Karyawan"
+            :error-message="form.errors.nik"
+            :states="form.errors.nik ? 'error' : undefined"
+            clearable
+          >
+            <template #prepend-icon>
+              <var-icon name="card-account-details" color="#6366f1" />
+            </template>
+          </var-input>
+
           <!-- Nama Input -->
           <var-input
             v-model="form.name"

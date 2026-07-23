@@ -14,7 +14,7 @@ use Laravel\Passport\Contracts\OAuthenticatable;
 use Laravel\Passport\HasApiTokens;
 
 
-#[Fillable(['name', 'email', 'password'])]
+#[Fillable(['nik', 'name', 'email', 'password'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements OAuthenticatable
 {

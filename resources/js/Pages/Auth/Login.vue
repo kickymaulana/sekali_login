@@ -3,7 +3,7 @@ import { useForm, Head, Link } from '@inertiajs/vue3'
 import { Snackbar } from '@varlet/ui'
 
 const form = useForm({
-  email: '',
+  nik: '',
   password: '',
   remember: false,
 })
@@ -11,8 +11,8 @@ const form = useForm({
 const submit = () => {
   form.post(route('login'), {
     onError: () => {
-      if (form.errors.email) {
-        Snackbar.error(form.errors.email)
+      if (form.errors.nik) {
+        Snackbar.error(form.errors.nik)
       } else if (form.errors.password) {
         Snackbar.error(form.errors.password)
       }
@@ -45,17 +45,17 @@ const submit = () => {
       <!-- Form Section -->
       <div class="form-container">
         <form @submit.prevent="submit" class="space-y-4">
-          <!-- Email Input -->
+          <!-- NIK Input -->
           <var-input
-            v-model="form.email"
-            label="Email"
-            placeholder="Masukkan email Anda"
-            :error-message="form.errors.email"
-            :states="form.errors.email ? 'error' : undefined"
+            v-model="form.nik"
+            label="NIK (Nomor Induk)"
+            placeholder="Masukkan NIK Anda"
+            :error-message="form.errors.nik"
+            :states="form.errors.nik ? 'error' : undefined"
             clearable
           >
             <template #prepend-icon>
-              <var-icon name="email-outline" color="#6366f1" />
+              <var-icon name="card-account-details" color="#6366f1" />
             </template>
           </var-input>
 

@@ -7,6 +7,7 @@ defineProps<{
 }>()
 
 const form = useForm({
+  nik: '',
   name: '',
   email: '',
   password: '',
@@ -49,6 +50,10 @@ const submit = () => {
 
       <div class="form-container">
         <form @submit.prevent="submit">
+          <var-input v-model="form.nik" label="NIK" placeholder="Masukkan NIK (opsional)" :error-message="form.errors.nik">
+            <template #prepend-icon><var-icon name="card-account-details" color="#6366f1" /></template>
+          </var-input>
+
           <var-input v-model="form.name" label="Nama Lengkap" placeholder="Masukkan nama lengkap" :error-message="form.errors.name">
             <template #prepend-icon><var-icon name="account-outline" color="#6366f1" /></template>
           </var-input>

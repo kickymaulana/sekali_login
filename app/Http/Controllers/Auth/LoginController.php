@@ -17,15 +17,14 @@ class LoginController extends Controller
     public function store(Request $request)
     {
         $credentials = $request->validate([
-            'email' => ['required', 'email'],
+            'nik' => ['required'],
             'password' => ['required'],
         ], [
-            'email.required' => 'Email wajib diisi.',
-            'email.email' => 'Format email tidak valid.',
+            'nik.required' => 'NIK wajib diisi.',
             'password.required' => 'Kata sandi wajib diisi.',
         ]);
 
-        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+        if (Auth::attempt(['nik' => $request->nik, 'password' => $request->password], $request->boolean('remember'))) {
             $request->session()->regenerate();
 
             // 🟢 Ambil URL intended (tujuan awal user sebelum di-intercept halaman login)
@@ -36,8 +35,8 @@ class LoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'Email atau password yang Anda masukkan salah.',
-        ])->onlyInput('email');
+            'nik' => 'NIK atau password yang Anda masukkan salah.',
+        ])->onlyInput('nik');
     }
 
     public function destroy(Request $request)
