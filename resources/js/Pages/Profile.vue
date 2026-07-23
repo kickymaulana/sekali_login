@@ -183,7 +183,6 @@ const handleAddClient = () => {
       <div class="logout-section">
         <var-button
           block
-          round
           type="danger"
           outline
           class="logout-btn"

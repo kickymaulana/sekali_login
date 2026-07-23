@@ -115,7 +115,6 @@ const submit = () => {
             <var-button
               type="primary"
               block
-              round
               native-type="submit"
               :loading="form.processing"
               class="register-btn"
