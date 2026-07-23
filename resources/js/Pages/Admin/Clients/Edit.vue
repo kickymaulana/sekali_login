@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { Head, Link, useForm, router } from '@inertiajs/vue3'
+import { Head, Link, useForm, router, usePage } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
+import { ref, computed } from 'vue'
 
 interface OAuthClient {
   id: string
@@ -24,12 +25,69 @@ const form = useForm({
   redirect: redirectUrl,
 })
 
+const showSecret = ref(false)
+const secretText = ref('')
+const loadingSecret = ref(false)
+const loadingRegenerate = ref(false)
+const page = usePage()
+
 const submit = () => {
   form.put(route('admin.clients.update', props.client.id), {
     onSuccess: () => Snackbar.success('Aplikasi berhasil diperbarui'),
     onError: () => {
       if (form.errors.name) Snackbar.error(form.errors.name)
       else if (form.errors.redirect) Snackbar.error(form.errors.redirect)
+    },
+  })
+}
+
+const toggleSecret = async () => {
+  if (showSecret.value) {
+    showSecret.value = false
+    return
+  }
+  loadingSecret.value = true
+  try {
+    const res = await fetch(route('admin.clients.secret', props.client.id))
+    const data = await res.json()
+    secretText.value = data.secret
+    showSecret.value = true
+  } catch {
+    Snackbar.error('Gagal memuat secret')
+  } finally {
+    loadingSecret.value = false
+  }
+}
+
+const copySecret = async () => {
+  try {
+    await navigator.clipboard.writeText(secretText.value)
+    Snackbar.success('Secret disalin ke clipboard!')
+  } catch {
+    Snackbar.error('Gagal menyalin')
+  }
+}
+
+const confirmRegenerate = () => {
+  Dialog({
+    title: 'Regenerate Client Secret?',
+    message: 'Aplikasi yang menggunakan client ini harus diperbarui dengan secret baru. Lanjutkan?',
+    onConfirm: async () => {
+      loadingRegenerate.value = true
+      try {
+        const res = await fetch(route('admin.clients.regenerate-secret', props.client.id), {
+          method: 'POST',
+          headers: { 'X-CSRF-TOKEN': (page.props as any).csrf_token },
+        })
+        const data = await res.json()
+        secretText.value = data.secret
+        showSecret.value = true
+        Snackbar.success('Secret berhasil digenerate ulang!')
+      } catch {
+        Snackbar.error('Gagal regenerate secret')
+      } finally {
+        loadingRegenerate.value = false
+      }
     },
   })
 }
@@ -86,6 +144,27 @@ const confirmDelete = () => {
           <div class="info-box">
             <var-icon name="information-outline" :size="18" color="#6366f1" />
             <span>Client ID: <code class="client-id">{{ client.id }}</code></span>
+          </div>
+
+          <!-- Client Secret -->
+          <div class="secret-section">
+            <var-button type="info" text block @click="toggleSecret" :loading="loadingSecret" class="secret-toggle">
+              <var-icon :name="showSecret ? 'eye-off' : 'eye'" :size="16" />
+              {{ showSecret ? 'Sembunyikan Secret' : 'Tampilkan Client Secret' }}
+            </var-button>
+
+            <div v-if="showSecret" class="secret-reveal">
+              <div class="secret-value-row">
+                <code class="secret-value">{{ secretText }}</code>
+                <var-button size="small" round text @click="copySecret">
+                  <var-icon name="content-copy" :size="16" color="#6366f1" />
+                </var-button>
+              </div>
+              <var-button type="warning" text size="small" @click="confirmRegenerate" :loading="loadingRegenerate" class="regenerate-btn">
+                <var-icon name="refresh" :size="14" />
+                Regenerate Secret
+              </var-button>
+            </div>
           </div>
 
           <div class="form-actions">
@@ -244,5 +323,53 @@ const confirmDelete = () => {
 .submit-btn {
   font-weight: 700 !important;
   height: 40px !important;
+}
+
+/* Secret Section */
+.secret-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.secret-toggle {
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  gap: 6px !important;
+}
+
+.secret-reveal {
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.secret-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.secret-value {
+  flex: 1;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 12px;
+  color: #4f46e5;
+  word-break: break-all;
+  line-height: 1.5;
+}
+
+.regenerate-btn {
+  align-self: flex-start;
+  font-size: 11px !important;
+  gap: 4px !important;
 }
 </style>

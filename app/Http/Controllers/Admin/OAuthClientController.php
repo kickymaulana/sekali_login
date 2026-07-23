@@ -43,20 +43,27 @@ class OAuthClientController extends Controller
             'redirect' => 'required|url',
         ]);
 
-        // 🟢 Buat Client langsung via Model Client agar aman untuk polymorphic owner
-        Client::create([
+        $secret = Str::random(40);
+
+        $client = Client::create([
             'id' => (string) Str::uuid(),
             'owner_id' => $request->user()->id,
             'owner_type' => get_class($request->user()),
             'name' => $request->name,
-            'secret' => Str::random(40),
+            'secret' => $secret,
             'provider' => null,
-            'redirect_uris' => [$request->redirect], // Laravel Passport v12+ menyimpan array URL
+            'redirect_uris' => [$request->redirect],
             'grant_types' => ['authorization_code', 'refresh_token'],
             'revoked' => false,
         ]);
 
-        return redirect()->route('admin.clients.index')->with('success', 'OAuth Client berhasil dibuat!');
+        return redirect()->route('admin.clients.create')->with([
+            'new_client' => [
+                'id' => $client->id,
+                'name' => $request->name,
+                'secret' => $secret,
+            ]
+        ]);
     }
 
     public function update(Request $request, $clientId)
@@ -87,5 +94,26 @@ class OAuthClientController extends Controller
         }
 
         return redirect()->route('admin.clients.index');
+    }
+
+    public function showSecret($clientId)
+    {
+        $client = Client::where('id', $clientId)->firstOrFail();
+
+        return response()->json([
+            'secret' => $client->secret,
+        ]);
+    }
+
+    public function regenerateSecret(Request $request, $clientId)
+    {
+        $client = Client::where('id', $clientId)->firstOrFail();
+
+        $newSecret = Str::random(40);
+        $client->update(['secret' => $newSecret]);
+
+        return response()->json([
+            'secret' => $newSecret,
+        ]);
     }
 }

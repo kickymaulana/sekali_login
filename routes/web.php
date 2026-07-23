@@ -98,6 +98,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // OAuth Clients CRUD
     Route::resource('clients', OAuthClientController::class);
 
+    // Client Secret management
+    Route::get('clients/{client}/secret', [OAuthClientController::class, 'showSecret'])->name('clients.secret');
+    Route::post('clients/{client}/regenerate-secret', [OAuthClientController::class, 'regenerateSecret'])->name('clients.regenerate-secret');
+
     // User Management CRUD
     Route::resource('users', UserController::class);
 
