@@ -7,7 +7,7 @@ import inertia from '@inertiajs/vite'
 import path from 'path';
 
 export default defineConfig({
-    base: '/sekali_login/public/build/',
+    base: '/build/',
     plugins: [
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.ts'],
