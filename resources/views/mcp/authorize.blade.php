@@ -110,8 +110,11 @@
     <p class="subtitle">Aplikasi ini akan menerima akses ke akun SSO Anda.</p>
 
     <div class="info-box">
-        <div class="label">Logged in as</div>
-        <div class="value">{{ $user->email }}</div>
+        <div class="label">Login sebagai</div>
+        <div class="value">{{ $user->name ?? $user->email }}</div>
+        <div style="font-size:13px;color:#64748b;margin-top:4px;">
+            NIK: <strong>{{ $user->nik ?? '-' }}</strong>
+        </div>
     </div>
 
     <div class="btn-group">
