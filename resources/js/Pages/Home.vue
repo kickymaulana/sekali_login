@@ -85,7 +85,11 @@ const handleAddClient = () => {
 }
 
 const handleTabChange = (index: number) => {
-  if (index === 3) {
+  if (index === 1) {
+    router.get(route('connected-apps'))
+  } else if (index === 2) {
+    router.get(route('security'))
+  } else if (index === 3) {
     router.get(route('profile'))
   }
 }
@@ -202,12 +206,12 @@ const isAdmin = computed(() => {
       </div>
 
       <div class="category-scroll">
-        <div class="category-item">
+        <Link :href="route('password.change')" class="category-item">
           <var-button type="primary" fab tonal :elevation="false">
             <var-icon name="checkbox-marked-circle" :size="24" />
           </var-button>
           <span>Ubah Password</span>
-        </div>
+        </Link>
 
         <div class="category-item">
           <var-button type="info" fab tonal :elevation="false">
@@ -234,7 +238,7 @@ const isAdmin = computed(() => {
       <!-- Connected Apps List -->
       <div class="section-header space-between">
         <h3 class="section-title">Aplikasi Terhubung</h3>
-        <span class="see-all-link">Lihat Semua</span>
+        <Link :href="route('connected-apps')" class="see-all-link">Lihat Semua</Link>
       </div>
 
       <!-- State Jika Belum Ada Aplikasi -->
@@ -258,9 +262,9 @@ const isAdmin = computed(() => {
               <span class="request-category">
                 <var-icon name="calendar-month-outline" :size="14" /> Diberi Izin: {{ app.connectedAt }}
               </span>
-              <var-button size="mini" type="danger">
-                Revoke
-              </var-button>
+              <Link :href="route('connected-apps')">
+                <var-button size="mini" type="danger">Revoke</var-button>
+              </Link>
             </div>
           </div>
         </div>

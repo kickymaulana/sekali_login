@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Admin\OAuthClientController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\ConnectedAppController;
 
 
 // Route untuk Guest (Belum Login)
@@ -25,6 +26,25 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function (Request $request) {
         $user = $request->user();
 
+        $connectedApps = DB::table('oauth_access_tokens')
+            ->join('oauth_clients', 'oauth_access_tokens.client_id', '=', 'oauth_clients.id')
+            ->where('oauth_access_tokens.user_id', $user->id)
+            ->where('oauth_access_tokens.revoked', false)
+            ->select(
+                'oauth_access_tokens.id as id',
+                'oauth_clients.name',
+                'oauth_access_tokens.created_at',
+            )
+            ->get()
+            ->map(fn($app) => [
+                'id' => $app->id,
+                'name' => $app->name,
+                'category' => 'OAuth2 App',
+                'connectedAt' => \Carbon\Carbon::parse($app->created_at)->format('d M Y'),
+                'status' => 'Active',
+                'icon' => 'code-json',
+            ]);
+
         return Inertia::render('Home', [
             'auth' => [
                 'user' => [
@@ -36,21 +56,12 @@ Route::middleware('auth')->group(function () {
                 ],
             ],
             'summary' => [
-                'activeApps' => 3,       // Aplikasi terhubung
-                'activeSessions' => 1,   // Sesi aktif
-                'tokensIssued' => 12,    // Token diterbitkan
+                'activeApps' => $connectedApps->count(),
+                'activeSessions' => 1,
+                'tokensIssued' => $connectedApps->count(),
                 'rolesCount' => $user->roles()->count(),
             ],
-            'connectedApps' => [
-                [
-                    'id' => 1,
-                    'name' => 'Aplikasi Klien PHP Native',
-                    'category' => 'Web App (OAuth2)',
-                    'connectedAt' => '22 Jul 2026',
-                    'status' => 'Active',
-                    'icon' => 'code-json',
-                ],
-            ],
+            'connectedApps' => $connectedApps,
         ]);
     })->name('dashboard');
 
@@ -71,6 +82,10 @@ Route::middleware('auth')->group(function () {
             ],
         ]);
     })->name('profile');
+
+    Route::get('/connected-apps', [ConnectedAppController::class, 'index'])->name('connected-apps');
+    Route::get('/security', function () { return Inertia::render('Security'); })->name('security');
+    Route::post('/connected-apps/{tokenId}/revoke', [ConnectedAppController::class, 'revoke'])->name('connected-apps.revoke');
 
     Route::get('/password/change', function (Request $request) {
         return Inertia::render('Auth/ChangePassword');

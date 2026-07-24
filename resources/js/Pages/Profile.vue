@@ -27,11 +27,9 @@ const handleLogout = () => {
 }
 
 const handleTabChange = (index: number) => {
-  if (index === 0) {
-    router.get(route('dashboard'))
-  } else if (index === 3) {
-    // stay
-  }
+  if (index === 0) router.get(route('dashboard'))
+  else if (index === 1) router.get(route('connected-apps'))
+  else if (index === 2) router.get(route('security'))
 }
 
 const handleAddClient = () => {
@@ -163,13 +161,13 @@ const handleAddClient = () => {
           <span class="menu-label">Ubah Password</span>
           <var-icon name="chevron-right" :size="20" color="#cbd5e1" />
         </Link>
-        <div class="menu-item">
+        <Link :href="route('connected-apps')" class="menu-item">
           <div class="menu-icon-box bg-sky">
             <var-icon name="cellphone" :size="20" color="#0284c7" />
           </div>
           <span class="menu-label">Aplikasi Terhubung</span>
           <var-icon name="chevron-right" :size="20" color="#cbd5e1" />
-        </div>
+        </Link>
         <Link :href="route('admin.users.index')" class="menu-item" v-if="props.auth.user?.roles?.includes('admin')">
           <div class="menu-icon-box bg-indigo">
             <var-icon name="account-group" :size="20" color="#4f46e5" />
