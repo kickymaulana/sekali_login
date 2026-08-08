@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
@@ -10,9 +11,16 @@ interface UserItem {
 }
 
 const props = defineProps<{
-  users: { data: UserItem[] }
+  users: { data: UserItem[]; links: any[]; from: number; to: number; total: number; prev_page_url: string|null; next_page_url: string|null }
   roles: string[]
+  filters?: { search?: string }
 }>()
+
+const searchVal = ref(props.filters?.search || '')
+
+const search = () => {
+  router.get(route('admin.users.index'), { search: searchVal.value || undefined }, { preserveState: true })
+}
 
 const confirmDelete = (user: UserItem) => {
   Dialog({
@@ -57,6 +65,20 @@ const confirmDelete = (user: UserItem) => {
         </Link>
       </div>
 
+      <div class="search-bar">
+        <var-input
+          v-model="searchVal"
+          placeholder="Cari nama / NIK / email..."
+          clearable
+          @keyup.enter="search"
+          @clear="search"
+          style="flex: 1"
+        />
+        <button class="search-btn" @click="search">
+          <var-icon name="magnify" :size="18" />
+        </button>
+      </div>
+
       <div class="table-card">
         <var-table>
           <thead>
@@ -92,6 +114,22 @@ const confirmDelete = (user: UserItem) => {
             </tr>
           </tbody>
         </var-table>
+      </div>
+
+      <div class="pagination">
+        <span class="page-info">Menampilkan {{ users.from }}–{{ users.to }} dari {{ users.total }} user</span>
+        <div class="page-btns">
+          <a
+            v-if="users.prev_page_url"
+            :href="users.prev_page_url"
+            class="page-btn"
+          >Sebelumnya</a>
+          <a
+            v-if="users.next_page_url"
+            :href="users.next_page_url"
+            class="page-btn"
+          >Selanjutnya</a>
+        </div>
       </div>
     </main>
   </div>
@@ -177,6 +215,58 @@ const confirmDelete = (user: UserItem) => {
 .action-bar {
   display: flex;
   justify-content: flex-end;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 4px 6px 4px 14px;
+}
+
+.search-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  border-radius: 10px;
+  background: #4f46e5;
+  color: #ffffff;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.page-info {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.page-btns {
+  display: flex;
+  gap: 8px;
+}
+
+.page-btn {
+  padding: 6px 16px;
+  border-radius: 8px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 .action-btn {
