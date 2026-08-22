@@ -107,7 +107,7 @@
     </div>
 
     <h1>Authorize {{ $client->name }}</h1>
-    <p class="subtitle">Aplikasi ini akan menerima akses ke akun SSO Anda.</p>
+    <p class="subtitle">{{ $client->name }} akan menggunakan identitas SSO Anda untuk proses login dan menentukan hak akses aplikasi.</p>
 
     <div class="info-box">
         <div class="label">Login sebagai</div>
@@ -128,7 +128,7 @@
                 <svg stroke="currentColor" fill="none" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                 </svg>
-                Tolak
+                Batalkan
             </button>
         </form>
 
@@ -138,7 +138,7 @@
             <input type="hidden" name="client_id" value="{{ $client->id }}">
             <input type="hidden" name="auth_token" value="{{ $authToken }}">
             <button type="submit" class="btn btn-approve" id="authorizeButton">
-                <span id="authorizeText">Setujui</span>
+                <span id="authorizeText">Lanjut ke {{ $client->name }}</span>
                 <svg id="loadingSpinner" class="spinner" viewBox="0 0 24 24" fill="none">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
