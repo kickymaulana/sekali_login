@@ -1,17 +1,17 @@
 <?php
 
+use App\Http\Controllers\Admin\OAuthClientController;
+use App\Http\Controllers\Admin\RoleController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\RegisterController;
+use App\Http\Controllers\ConnectedAppController;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Validation\Rules\Password;
 use Inertia\Inertia;
-use App\Http\Controllers\Auth\RegisterController;
-use Illuminate\Http\Request;
-use App\Http\Controllers\Admin\OAuthClientController;
-use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\RoleController;
-use App\Http\Controllers\ConnectedAppController;
-
 
 // Route untuk Guest (Belum Login)
 Route::middleware('guest')->group(function () {
@@ -31,18 +31,21 @@ Route::middleware('auth')->group(function () {
             ->where('oauth_access_tokens.user_id', $user->id)
             ->where('oauth_access_tokens.revoked', false)
             ->select(
-                'oauth_access_tokens.id as id',
+                'oauth_clients.id as id',
                 'oauth_clients.name',
-                'oauth_access_tokens.created_at',
+                DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
+                DB::raw('MAX(oauth_access_tokens.created_at) as last_connected'),
             )
+            ->groupBy('oauth_clients.id', 'oauth_clients.name')
             ->get()
-            ->map(fn($app) => [
+            ->map(fn ($app) => [
                 'id' => $app->id,
                 'name' => $app->name,
                 'category' => 'OAuth2 App',
-                'connectedAt' => \Carbon\Carbon::parse($app->created_at)->format('d M Y'),
+                'connectedAt' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),
                 'status' => 'Active',
                 'icon' => 'code-json',
+                'token_count' => $app->token_count,
             ]);
 
         return Inertia::render('Home', [
@@ -84,8 +87,10 @@ Route::middleware('auth')->group(function () {
     })->name('profile');
 
     Route::get('/connected-apps', [ConnectedAppController::class, 'index'])->name('connected-apps');
-    Route::get('/security', function () { return Inertia::render('Security'); })->name('security');
-    Route::post('/connected-apps/{tokenId}/revoke', [ConnectedAppController::class, 'revoke'])->name('connected-apps.revoke');
+    Route::get('/security', function () {
+        return Inertia::render('Security');
+    })->name('security');
+    Route::post('/connected-apps/{clientId}/revoke', [ConnectedAppController::class, 'revoke'])->name('connected-apps.revoke');
 
     Route::get('/password/change', function (Request $request) {
         return Inertia::render('Auth/ChangePassword');

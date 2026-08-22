@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
-interface AppItem { token_id: string; app_name: string; created_at: string; expires_at: string | null }
+interface AppItem { client_id: string; app_name: string; token_count: number; last_connected: string }
 
 const props = defineProps<{ apps: AppItem[] }>()
 const page = usePage()
@@ -11,12 +11,12 @@ const pp = page.props as any
 const baseUrl = pp.app_url || ''
 const csrf = pp.csrf_token || ''
 
-const confirmRevoke = (tokenId: string, appName: string) => {
+const confirmRevoke = (clientId: string, appName: string) => {
     Dialog({
         title: 'Cabut Akses?',
         message: `Aplikasi "${appName}" tidak akan bisa mengakses akun Anda lagi.`,
         onConfirm: async () => {
-            const res = await fetch(`${baseUrl}/connected-apps/${tokenId}/revoke`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
+            const res = await fetch(`${baseUrl}/connected-apps/${clientId}/revoke`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
             if (res.ok || res.redirected) { Snackbar.success('Akses dicabut'); window.location.reload() }
         },
     })
@@ -37,17 +37,17 @@ const confirmRevoke = (tokenId: string, appName: string) => {
                 <p>Belum ada aplikasi terhubung</p>
             </div>
 
-            <div v-for="app in apps" :key="app.token_id" class="card">
+            <div v-for="app in apps" :key="app.client_id" class="card">
                 <div class="app-info">
                     <div class="app-icon">
                         <var-icon name="cellphone" :size="24" color="#4f46e5" />
                     </div>
                     <div class="app-detail">
                         <span class="app-name">{{ app.app_name }}</span>
-                        <span class="app-date">Terhubung {{ app.created_at }}</span>
+                        <span class="app-date">Terhubung {{ app.last_connected }} · {{ app.token_count }} token</span>
                     </div>
                 </div>
-                <var-button type="danger" size="small" text @click="confirmRevoke(app.token_id, app.app_name)">Cabut</var-button>
+                <var-button type="danger" size="small" text @click="confirmRevoke(app.client_id, app.app_name)">Cabut</var-button>
             </div>
         </main>
     </div>
