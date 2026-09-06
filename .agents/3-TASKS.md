@@ -30,6 +30,11 @@
 ## Verifikasi
 
 - [ ] Pint: `vendor/bin/pint`
-- [ ] Typecheck: `npx vue-tsc --noEmit`
+- [ ] Typecheck: `npx vue-tsc --noEmit` — **ERROR pre-existing** (vue-tsc incompatible TS 7), jangan pakai sbg validasi
 - [ ] Test: `composer test`
-- [ ] Manual: login NIK → authorize client → `/connected-apps` → revoke
+- [ ] Manual: login NIK → authorize client → `/connected-apps` (grup per app) → revoke per client
+
+## Selesai sesi 2026-08-22
+
+- [x] **UX1** Teks konsen blade `mcp/authorize` dinamis `$client->name` (subtitle + tombol "Batalkan" / "Lanjut ke {client}"). *lihat `resources/views/mcp/authorize.blade.php`*
+- [x] **UX2** Connected apps grup per aplikasi (bukan per token) — `ConnectedAppController@index` + dashboard `/`. Revoke per client (semua token sekaligus). Format tanggal `translatedFormat('d M Y')` locale id → "22 Agt 2026". *lihat `ConnectedAppController.php`, `routes/web.php`, `Profile/ConnectedApps.vue`*

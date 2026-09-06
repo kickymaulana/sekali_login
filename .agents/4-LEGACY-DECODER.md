@@ -60,8 +60,8 @@ database/seeders/           DatabaseSeeder → UserSeeder (admin)
 | POST | `/logout` | `Auth\LoginController@destroy` | auth |
 | GET | `/` (dashboard) | closure di web.php | auth |
 | GET | `/profile` | closure | auth |
-| GET | `/connected-apps` | `ConnectedAppController@index` | auth |
-| POST | `/connected-apps/{tokenId}/revoke` | `ConnectedAppController@revoke` | auth |
+| GET | `/connected-apps` | `ConnectedAppController@index` (grup per client) | auth |
+| POST | `/connected-apps/{clientId}/revoke` | `ConnectedAppController@revoke` (revoke semua token client) | auth |
 | GET | `/security` | closure | auth |
 | GET/POST | `/password/change` | closure | auth |
 | GET | `/api/user` | closure (api.php) | `auth:api` |
@@ -73,9 +73,9 @@ database/seeders/           DatabaseSeeder → UserSeeder (admin)
 1. **Login berbasis NIK + password** (`Auth::attempt(['nik' => ...])`), bukan email. `nik` nullable + unique (migration `add_nik_to_users_table`).
 2. **Register**: wajib nik (unique), nama, email (unique), password (confirmed, rules default). Assign role default `user` bila role ada. Auto-login. Redirect via `Inertia::location` (full browser redirect, mendukung alur OAuth).
 3. **Login sukses** → `Inertia::location` ke `url.intended` (default dashboard), session regenerate.
-4. **Dashboard**: hitung connected apps dari `oauth_access_tokens` (revoked=false) join `oauth_clients`; summary aktifApps/sessions/tokensIssued/rolesCount.
+4. **Dashboard**: hitung connected apps dari `oauth_access_tokens` (revoked=false) join `oauth_clients` — **grup per client** (`GROUP BY client_id`), summary aktifApps/sessions/tokensIssued/rolesCount.
 5. **Client OAuth** (custom): buat `Client` Passport manual — id UUID, `owner_id` = admin pembuat, secret `Str::random(40)` **plaintext**, `redirect_uris` array, `grant_types = [authorization_code, refresh_token]`. Secret tampil sekali (flash `new_client`); `showSecret` selalu menolak; `regenerateSecret` buat secret baru.
-6. **Revoke akses** = update `oauth_access_tokens.revoked = 1` (scoped ke user pemilik token).
+6. **Revoke akses** = update `oauth_access_tokens.revoked = 1` — **scoped per client** (revoke semua token milik client untuk user tersebut), bukan per token individual.
 7. **Role/permission**: spatie. Roles `admin`, `user`. Permission `manage users` → `admin`. UserController wajib pilih role (exists:roles,name).
 8. **MCP tool `get-user-info`**: cari user by email OR id, return id/name/email/roles/created_at. Error bila tak ditemukan.
 9. **Ganti password**: validasi password lama via `Hash::check`, baru min 8 + confirmed.
@@ -122,6 +122,10 @@ cache / jobs / sessions
 ### Catatan
 - Tidak ada tabel `personal_access_clients` seed → cek bahwa `passport:install` sudah dijalankan (tabel oauth_* ada di migration).
 - `nik` diindeks unique tapi nullable → beberapa user boleh tanpa NIK, tapi login NIK tidak akan menemukan mereka.
+- **Connected apps ditampilkan grup per aplikasi** (bukan per token) — `ConnectedAppController@index` + dashboard `/` pakai `GROUP BY client_id`, `COUNT(token)`, `MAX(created_at)`. Revoke per client (semua token sekaligus).
+- **Format tanggal** pakai `Carbon::translatedFormat('d M Y')` locale `id` → "22 Agt 2026" (singkatan standar Carbon id, mis. Agustus = "Agt").
+- **Teks konsen blade `mcp/authorize`** (final, dinamis `$client->name`): subtitle "akan menggunakan identitas SSO Anda...", tombol "Batalkan" / "Lanjut ke {client}".
+- **vue-tsc ERROR** (incompatible TS 7) — jangan dipakai sebagai validasi typecheck.
 
 ## Referensi lanjutan
 - PRD: `PRD.md`

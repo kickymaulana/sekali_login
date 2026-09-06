@@ -20,9 +20,14 @@ Admin buat client via UI `/admin/clients` (controller custom `Admin/OAuthClientC
 - `grant_types [authorization_code, refresh_token]`, `redirect_uris` array
 
 Flow: `/oauth/authorize` → blade `mcp/authorize` (konsen) → code → `POST /oauth/token` → `GET /api/user` (Bearer).
-Revoke: `POST /connected-apps/{tokenId}/revoke` → `revoked=1`.
+Revoke: `POST /connected-apps/{clientId}/revoke` → revoke **semua token** client untuk user (`revoked=1`).
 
 **GOTCHA:** `authorizationView` di-register 2x di `AppServiceProvider`; blade `mcp/authorize` menang (**SENGAJA**, utk flow MCP/AI). Inertia `Auth/OAuth/Authorize.vue` = dead code. Blade kirim `state` kosong (bug, jangan ubah tanpa diskusi).
+
+**Blade `mcp/authorize` (teks dinamis, final):**
+- Subtitle: `{{ $client->name }} akan menggunakan identitas SSO Anda untuk proses login dan menentukan hak akses aplikasi.`
+- Tombol kiri: `Batalkan`
+- Tombol kanan: `Lanjut ke {{ $client->name }}`
 
 ## MCP (laravel/mcp)
 `routes/ai.php` auto-register (tidak perlu `withRouting(ai:)`). Server `app/Mcp/Servers/SsoServer.php`, tools `app/Mcp/Tools/*` (daftar di `$tools` array).
@@ -34,6 +39,12 @@ Pola **"android-layout"**: `.android-layout` > `.top-app-bar` > `.android-conten
 Komponen Varlet: `var-icon`, `var-button`, `var-input`, `var-chip`, `var-table`, `var-bottom-navigation`, `Snackbar`, `Dialog`.
 Shared props (`HandleInertiaRequests`): `csrf_token`, `app_url`, `new_client` (flash), `auth.user {id, name, email, roles, permissions}`.
 
+**Connected apps — grup per aplikasi (bukan per token):**
+- `ConnectedAppController@index`: `GROUP BY client_id` → tampil 1 baris per app (nama, `token_count`, `last_connected` = `MAX(created_at)`).
+- `Profile/ConnectedApps.vue`: card per app — "Terhubung {tgl} · {n} token", tombol Cabut → revoke per client.
+- Dashboard `/` juga grup per app (sama).
+- Format tanggal: `Carbon::translatedFormat('d M Y')` locale `id` → "22 Agt 2026" (standar Carbon id).
+
 ## DB
 MariaDB `sekalilogin` (dev), sqlite `:memory:` (test). Tabel: `users`, `oauth_*` (Passport), `roles`/`permissions` (Spatie), `sessions`/`cache`/`jobs`.
 Relasi: users 1—N oauth_access_tokens · oauth_clients 1—N oauth_access_tokens · users N—M roles N—M permissions.
@@ -41,7 +52,7 @@ Relasi: users 1—N oauth_access_tokens · oauth_clients 1—N oauth_access_toke
 ## Commands
 - `composer test` = `config:clear` + `artisan test` (PHPUnit sqlite memory; **BELUM ada test**)
 - `vendor/bin/pint` (format, pint.json default)
-- `npx vue-tsc --noEmit` (typecheck; tak ada npm script)
+- `npx vue-tsc --noEmit` (typecheck; **ERROR pre-existing** — vue-tsc incompatible dgn TS 7, jangan pakai sbg validasi)
 - `php artisan passport:hash` (hash secret lama; client baru sudah hash otomatis)
 - `composer setup` (fresh env + migrate + build)
 
@@ -52,6 +63,6 @@ Relasi: users 1—N oauth_access_tokens · oauth_clients 1—N oauth_access_toke
 - `PRD.md` — dokumen produk
 
 ## JANGAN diubah tanpa diskusi user
-- Blade `mcp/authorize` (authorizationView) — dipakai flow MCP/AI
+- Blade `mcp/authorize` (authorizationView + teks dinamis) — dipakai flow MCP/AI, teks final
 - Validasi redirect: tetap `required|url` (admin butuh localhost utk test)
 - Mode saat ini: pahami saja, jangan ubah kode tanpa diminta
