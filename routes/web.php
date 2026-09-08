@@ -86,11 +86,14 @@ Route::middleware('auth')->group(function () {
         ]);
     })->name('profile');
 
-    Route::get('/connected-apps', [ConnectedAppController::class, 'index'])->name('connected-apps');
+    Route::get('/token-aktif', [ConnectedAppController::class, 'index'])->name('token-aktif');
+    Route::get('/aplikasi-terhubung', [ConnectedAppController::class, 'summary'])->name('aplikasi-terhubung');
+    Route::get('/aplikasi-terhubung/{clientId}', [ConnectedAppController::class, 'appTokens'])->name('aplikasi-terhubung.tokens');
+    Route::post('/aplikasi-terhubung/{clientId}/revoke-all', [ConnectedAppController::class, 'revokeAll'])->name('aplikasi-terhubung.revoke-all');
     Route::get('/security', function () {
         return Inertia::render('Security');
     })->name('security');
-    Route::post('/connected-apps/{clientId}/revoke', [ConnectedAppController::class, 'revoke'])->name('connected-apps.revoke');
+    Route::post('/token-aktif/{tokenId}/revoke', [ConnectedAppController::class, 'revoke'])->name('token-aktif.revoke');
 
     Route::get('/password/change', function (Request $request) {
         return Inertia::render('Auth/ChangePassword');

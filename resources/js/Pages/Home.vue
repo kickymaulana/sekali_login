@@ -86,7 +86,7 @@ const handleAddClient = () => {
 
 const handleTabChange = (index: number) => {
   if (index === 1) {
-    router.get(route('connected-apps'))
+    router.get(route('aplikasi-terhubung'))
   } else if (index === 2) {
     router.get(route('security'))
   } else if (index === 3) {
@@ -235,10 +235,10 @@ const isAdmin = computed(() => {
         </div>
       </div>
 
-      <!-- Connected Apps List -->
+      <!-- Token Aktif List -->
       <div class="section-header space-between">
         <h3 class="section-title">Aplikasi Terhubung</h3>
-        <Link :href="route('connected-apps')" class="see-all-link">Lihat Semua</Link>
+        <Link :href="route('aplikasi-terhubung')" class="see-all-link">Lihat Semua</Link>
       </div>
 
       <!-- State Jika Belum Ada Aplikasi -->
@@ -247,7 +247,7 @@ const isAdmin = computed(() => {
         <p>Belum ada aplikasi eksternal yang terhubung.</p>
       </div>
 
-      <!-- List Aplikasi Terhubung dari Database -->
+      <!-- List Token Aktif dari Database -->
       <div v-else class="request-list">
         <div v-for="app in connectedApps" :key="app.id" class="request-card">
           <div class="request-main">
@@ -262,9 +262,10 @@ const isAdmin = computed(() => {
               <span class="request-category">
                 <var-icon name="calendar-month-outline" :size="14" /> Diberi Izin: {{ app.connectedAt }}
               </span>
-              <Link :href="route('connected-apps')">
-                <var-button size="mini" type="danger">Revoke</var-button>
-              </Link>
+                <Link :href="route('aplikasi-terhubung')">
+                  <var-button size="mini" type="danger">Detail</var-button>
+                </Link>
+
             </div>
           </div>
         </div>

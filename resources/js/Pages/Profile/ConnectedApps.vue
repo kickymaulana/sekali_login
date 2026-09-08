@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { Head, Link, router, usePage } from '@inertiajs/vue3'
 import { Snackbar, Dialog } from '@varlet/ui'
 
-interface AppItem { client_id: string; app_name: string; token_count: number; last_connected: string }
+interface AppItem { token_id: string; client_id: string; app_name: string; created_at: string; expires_at: string }
 
 const props = defineProps<{ apps: AppItem[] }>()
 const page = usePage()
@@ -11,22 +11,22 @@ const pp = page.props as any
 const baseUrl = pp.app_url || ''
 const csrf = pp.csrf_token || ''
 
-const confirmRevoke = (clientId: string, appName: string) => {
+const confirmRevoke = (tokenId: string, appName: string) => {
     Dialog({
-        title: 'Cabut Akses?',
-        message: `Aplikasi "${appName}" tidak akan bisa mengakses akun Anda lagi.`,
+        title: 'Cabut Token?',
+        message: `Token untuk aplikasi "${appName}" akan dicabut.`,
         onConfirm: async () => {
-            const res = await fetch(`${baseUrl}/connected-apps/${clientId}/revoke`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
-            if (res.ok || res.redirected) { Snackbar.success('Akses dicabut'); window.location.reload() }
+            const res = await fetch(`${baseUrl}/token-aktif/${tokenId}/revoke`, { method: 'POST', headers: { 'X-CSRF-TOKEN': csrf } })
+            if (res.ok || res.redirected) { Snackbar.success('Token dicabut'); window.location.reload() }
         },
     })
 }
 </script>
 
 <template>
-    <Head title="Aplikasi Terhubung - SSO" />
+    <Head title="Token Aktif - SSO" />
     <div class="layout">
-        <var-app-bar title="Aplikasi Terhubung" title-position="center">
+        <var-app-bar title="Token Aktif" title-position="center">
             <template #left><var-button round text @click="router.get(route('profile'))"><var-icon name="arrow-left" :size="24" /></var-button></template>
         </var-app-bar>
         <main class="content">
@@ -37,17 +37,17 @@ const confirmRevoke = (clientId: string, appName: string) => {
                 <p>Belum ada aplikasi terhubung</p>
             </div>
 
-            <div v-for="app in apps" :key="app.client_id" class="card">
+            <div v-for="app in apps" :key="app.token_id" class="card">
                 <div class="app-info">
                     <div class="app-icon">
                         <var-icon name="cellphone" :size="24" color="#4f46e5" />
                     </div>
                     <div class="app-detail">
                         <span class="app-name">{{ app.app_name }}</span>
-                        <span class="app-date">Terhubung {{ app.last_connected }} · {{ app.token_count }} token</span>
+                        <span class="app-date">Token {{ app.token_id.slice(0, 8) }} · Dibuat {{ app.created_at }} · Exp {{ app.expires_at }}</span>
                     </div>
                 </div>
-                <var-button type="danger" size="small" text @click="confirmRevoke(app.client_id, app.app_name)">Cabut</var-button>
+                <var-button type="danger" size="small" text @click="confirmRevoke(app.token_id, app.app_name)">Cabut</var-button>
             </div>
         </main>
     </div>

@@ -20,7 +20,7 @@ Admin buat client via UI `/admin/clients` (controller custom `Admin/OAuthClientC
 - `grant_types [authorization_code, refresh_token]`, `redirect_uris` array
 
 Flow: `/oauth/authorize` → blade `mcp/authorize` (konsen) → code → `POST /oauth/token` → `GET /api/user` (Bearer).
-Revoke: `POST /connected-apps/{clientId}/revoke` → revoke **semua token** client untuk user (`revoked=1`).
+Revoke: **token-scoped**. `POST /token-aktif/{tokenId}/revoke` cabut 1 token + refresh token terkait. `POST /aplikasi-terhubung/{clientId}/revoke-all` cabut semua token aktif client itu untuk user itu. Jangan sentuh `oauth_clients.secret` saat revoke.
 
 **GOTCHA:** `authorizationView` di-register 2x di `AppServiceProvider`; blade `mcp/authorize` menang (**SENGAJA**, utk flow MCP/AI). Inertia `Auth/OAuth/Authorize.vue` = dead code. Blade kirim `state` kosong (bug, jangan ubah tanpa diskusi).
 
@@ -39,10 +39,11 @@ Pola **"android-layout"**: `.android-layout` > `.top-app-bar` > `.android-conten
 Komponen Varlet: `var-icon`, `var-button`, `var-input`, `var-chip`, `var-table`, `var-bottom-navigation`, `Snackbar`, `Dialog`.
 Shared props (`HandleInertiaRequests`): `csrf_token`, `app_url`, `new_client` (flash), `auth.user {id, name, email, roles, permissions}`.
 
-**Connected apps — grup per aplikasi (bukan per token):**
-- `ConnectedAppController@index`: `GROUP BY client_id` → tampil 1 baris per app (nama, `token_count`, `last_connected` = `MAX(created_at)`).
-- `Profile/ConnectedApps.vue`: card per app — "Terhubung {tgl} · {n} token", tombol Cabut → revoke per client.
-- Dashboard `/` juga grup per app (sama).
+**Connected apps / token aktif:**
+- `ConnectedAppController@summary` → `Profile/ConnectedAppsSummary.vue`: grup per app, tombol `Lihat Token` buka detail app.
+- `ConnectedAppController@appTokens` → `Profile/AppTokens.vue`: tampil token aktif app itu saja, ada `Cabut Semua Token` dan revoke per token.
+- `ConnectedAppController@index` → `Profile/ConnectedApps.vue`: daftar semua token aktif user, 1 baris = 1 token, tombol Cabut.
+- Dashboard `/` arahkan ke `aplikasi-terhubung`.
 - Format tanggal: `Carbon::translatedFormat('d M Y')` locale `id` → "22 Agt 2026" (standar Carbon id).
 
 ## DB

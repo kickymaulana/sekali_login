@@ -2,12 +2,10 @@
 
 namespace App\Providers;
 
-use Illuminate\Support\ServiceProvider;
-use Laravel\Passport\Passport;
-use Inertia\Inertia;
 use Illuminate\Support\Facades\URL;
-
-
+use Illuminate\Support\ServiceProvider;
+use Inertia\Inertia;
+use Laravel\Passport\Passport;
 
 class AppServiceProvider extends ServiceProvider
 {

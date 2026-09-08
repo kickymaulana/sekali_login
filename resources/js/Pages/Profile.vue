@@ -28,7 +28,7 @@ const handleLogout = () => {
 
 const handleTabChange = (index: number) => {
   if (index === 0) router.get(route('dashboard'))
-  else if (index === 1) router.get(route('connected-apps'))
+  else if (index === 1) router.get(route('aplikasi-terhubung'))
   else if (index === 2) router.get(route('security'))
 }
 
@@ -161,9 +161,16 @@ const handleAddClient = () => {
           <span class="menu-label">Ubah Password</span>
           <var-icon name="chevron-right" :size="20" color="#cbd5e1" />
         </Link>
-        <Link :href="route('connected-apps')" class="menu-item">
+        <Link :href="route('token-aktif')" class="menu-item">
           <div class="menu-icon-box bg-sky">
             <var-icon name="cellphone" :size="20" color="#0284c7" />
+          </div>
+          <span class="menu-label">Token Aktif</span>
+          <var-icon name="chevron-right" :size="20" color="#cbd5e1" />
+        </Link>
+        <Link :href="route('aplikasi-terhubung')" class="menu-item">
+          <div class="menu-icon-box bg-sky">
+            <var-icon name="apps-box" :size="20" color="#0284c7" />
           </div>
           <span class="menu-label">Aplikasi Terhubung</span>
           <var-icon name="chevron-right" :size="20" color="#cbd5e1" />
