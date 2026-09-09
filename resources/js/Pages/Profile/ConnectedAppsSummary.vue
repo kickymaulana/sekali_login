@@ -5,6 +5,7 @@ interface AppItem {
   client_id: string
   app_name: string
   lifecycle_status: 'development' | 'production'
+  icon_url: string | null
   url: string
   token_count: number
   last_connected: string
@@ -39,9 +40,10 @@ const props = defineProps<{ apps: PaginatedApps }>()
 
        <div v-for="app in props.apps.data" :key="app.client_id" class="card">
          <a :href="app.url" target="_blank" rel="noopener noreferrer" class="app-info">
-           <div class="app-icon">
-             <var-icon name="apps-box" :size="24" color="#4f46e5" />
-           </div>
+             <div class="app-icon">
+               <img v-if="app.icon_url" :src="app.icon_url" :alt="`Icon ${app.app_name}`" class="app-icon-image" />
+               <var-icon v-else name="apps-box" :size="24" color="#4f46e5" />
+             </div>
            <div class="app-detail">
              <span class="app-name">{{ app.app_name }}</span>
              <span class="app-status" :class="app.lifecycle_status">{{ app.lifecycle_status === 'production' ? 'Production' : 'Development' }}</span>
@@ -77,7 +79,8 @@ const props = defineProps<{ apps: PaginatedApps }>()
 .pagination { display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:12px;color:#64748b;margin-top:8px; }
 .page-buttons { display:flex;gap:8px; }
 .page-buttons a { color:#4f46e5;text-decoration:none;font-weight:600; }
-.app-icon { width:40px;height:40px;border-radius:12px;background:#e0e7ff;display:flex;align-items:center;justify-content:center; }
+.app-icon { width:40px;height:40px;border-radius:12px;background:#e0e7ff;display:flex;align-items:center;justify-content:center;overflow:hidden; }
+.app-icon-image { width:100%;height:100%;object-fit:cover; }
 .app-detail { display:flex;flex-direction:column; }
 .app-name { font-size:14px;font-weight:600;color:#0f172a; }
 .app-status { font-size:11px;font-weight:600; }

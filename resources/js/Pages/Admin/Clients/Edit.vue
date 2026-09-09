@@ -34,6 +34,38 @@ const secretText = ref('')
 const loadingSecret = ref(false)
 const loadingRegenerate = ref(false)
 const page = usePage()
+const iconInput = ref<HTMLInputElement | null>(null)
+const iconForm = useForm<{ icon: File | null }>({ icon: null })
+
+const compressIcon = (file: File): Promise<File> => new Promise((resolve, reject) => {
+  const image = new Image()
+  const reader = new FileReader()
+  reader.onload = () => { image.src = reader.result as string }
+  reader.onerror = () => reject(new Error('Gagal membaca icon'))
+  image.onerror = () => reject(new Error('Format icon tidak valid'))
+  image.onload = () => {
+    const scale = Math.min(1, 256 / Math.max(image.width, image.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.width * scale))
+    canvas.height = Math.max(1, Math.round(image.height * scale))
+    canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob((blob) => blob
+      ? resolve(new File([blob], 'icon.webp', { type: 'image/webp' }))
+      : reject(new Error('Gagal mengompres icon')), 'image/webp', 0.8)
+  }
+  reader.readAsDataURL(file)
+})
+
+const uploadIcon = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  try {
+    iconForm.icon = await compressIcon(file)
+    iconForm.post(route('admin.clients.icon.update', props.client.id), { forceFormData: true })
+  } catch {
+    Snackbar.error('Gagal memproses icon')
+  }
+}
 
 const submit = () => {
   form.put(route('admin.clients.update', props.client.id), {
@@ -139,7 +171,13 @@ const confirmDelete = () => {
             <template #prepend-icon><var-icon name="web" color="#6366f1" /></template>
           </var-input>
 
-          <var-select v-model="form.lifecycle_status" label="Status Aplikasi" :error-message="form.errors.lifecycle_status">
+           <var-button type="primary" block @click="iconInput?.click()" :loading="iconForm.processing">
+             <var-icon name="image-edit" :size="18" />
+             Ganti Icon Aplikasi
+           </var-button>
+           <input ref="iconInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="uploadIcon" />
+
+           <var-select v-model="form.lifecycle_status" label="Status Aplikasi" :error-message="form.errors.lifecycle_status">
             <var-option label="Development" value="development" />
             <var-option label="Production" value="production" />
           </var-select>

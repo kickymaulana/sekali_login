@@ -47,6 +47,7 @@ Route::middleware('auth')->group(function () {
                 'oauth_clients.id as id',
                 'oauth_clients.name',
                 DB::raw('MAX(oauth_clients.lifecycle_status) as lifecycle_status'),
+                DB::raw('MAX(oauth_clients.icon_path) as icon_path'),
                 DB::raw('MAX(oauth_clients.app_url) as app_url'),
                 DB::raw('MAX(oauth_clients.redirect_uris) as redirect_uris'),
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
@@ -57,6 +58,7 @@ Route::middleware('auth')->group(function () {
             ->map(fn ($app) => [
                 'id' => $app->id,
                 'name' => $app->name,
+                'icon_url' => $app->icon_path ? route('aplikasi-terhubung.icon', $app->id) : null,
                 'category' => 'OAuth2 App',
                 'connectedAt' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),
                 'status' => 'Production',
@@ -108,6 +110,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/token-aktif', [ConnectedAppController::class, 'index'])->name('token-aktif');
     Route::get('/aplikasi-terhubung', [ConnectedAppController::class, 'summary'])->name('aplikasi-terhubung');
+    Route::get('/aplikasi-terhubung/{clientId}/icon', [ConnectedAppController::class, 'icon'])->name('aplikasi-terhubung.icon');
     Route::get('/aplikasi-terhubung/{clientId}', [ConnectedAppController::class, 'appTokens'])->name('aplikasi-terhubung.tokens');
     Route::post('/aplikasi-terhubung/{clientId}/revoke-all', [ConnectedAppController::class, 'revokeAll'])->name('aplikasi-terhubung.revoke-all');
     Route::get('/security', function () {
@@ -139,6 +142,8 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
     // OAuth Clients CRUD
+    Route::post('clients/{client}/icon', [OAuthClientController::class, 'updateIcon'])->name('clients.icon.update');
+    Route::get('clients/{client}/icon', [OAuthClientController::class, 'icon'])->name('clients.icon');
     Route::resource('clients', OAuthClientController::class);
 
     // Client Secret management

@@ -4,10 +4,25 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 
 class ConnectedAppController extends Controller
 {
+    private function getIconUrl(?string $iconPath, string $clientId): string
+    {
+        return $iconPath ? route('aplikasi-terhubung.icon', $clientId) : '';
+    }
+
+    public function icon(string $clientId)
+    {
+        $iconPath = DB::table('oauth_clients')->where('id', $clientId)->value('icon_path');
+
+        abort_unless($iconPath, 404);
+
+        return redirect(Storage::disk('s3')->temporaryUrl($iconPath, now()->addMinutes(5)));
+    }
+
     private function getAppUrl(?string $appUrl, string $redirectUris): string
     {
         if ($appUrl) {
@@ -62,18 +77,20 @@ class ConnectedAppController extends Controller
             ->select(
                 'oauth_clients.id as client_id',
                 'oauth_clients.name as app_name',
+                'oauth_clients.icon_path',
                 'oauth_clients.lifecycle_status',
                 'oauth_clients.app_url',
                 'oauth_clients.redirect_uris',
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
                 DB::raw('MAX(oauth_access_tokens.created_at) as last_connected')
             )
-            ->groupBy('oauth_clients.id', 'oauth_clients.name', 'oauth_clients.lifecycle_status', 'oauth_clients.app_url', 'oauth_clients.redirect_uris')
+            ->groupBy('oauth_clients.id', 'oauth_clients.name', 'oauth_clients.icon_path', 'oauth_clients.lifecycle_status', 'oauth_clients.app_url', 'oauth_clients.redirect_uris')
             ->orderByDesc('last_connected')
             ->paginate(8)
             ->through(fn ($app) => [
                 'client_id' => $app->client_id,
                 'app_name' => $app->app_name,
+                'icon_url' => $this->getIconUrl($app->icon_path, $app->client_id) ?: null,
                 'lifecycle_status' => $app->lifecycle_status,
                 'url' => $this->getAppUrl($app->app_url, $app->redirect_uris),
                 'token_count' => $app->token_count,

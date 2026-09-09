@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -16,7 +17,12 @@ class OAuthClientController extends Controller
         $clients = Client::where('owner_id', $request->user()->id)
             ->where('owner_type', get_class($request->user()))
             ->latest()
-            ->get();
+            ->get()
+            ->map(function (Client $client) {
+                $client->icon_url = $client->icon_path ? route('admin.clients.icon', $client->id) : null;
+
+                return $client;
+            });
 
         return Inertia::render('Admin/Clients/Index', [
             'clients' => $clients,
@@ -92,6 +98,33 @@ class OAuthClientController extends Controller
         }
 
         return redirect()->route('admin.clients.index');
+    }
+
+    public function updateIcon(Request $request, $clientId)
+    {
+        $request->validate([
+            'icon' => ['required', 'image', 'mimes:jpg,jpeg,png,webp', 'max:1024'],
+        ]);
+
+        $client = Client::where('id', $clientId)->firstOrFail();
+        $path = $request->file('icon')->store('app-icons/'.$client->id, 's3');
+
+        if ($client->icon_path) {
+            Storage::disk('s3')->delete($client->icon_path);
+        }
+
+        $client->update(['icon_path' => $path]);
+
+        return back()->with('success', 'Icon aplikasi berhasil diperbarui.');
+    }
+
+    public function icon($clientId)
+    {
+        $client = Client::where('id', $clientId)->firstOrFail();
+
+        abort_unless($client->icon_path, 404);
+
+        return redirect(Storage::disk('s3')->temporaryUrl($client->icon_path, now()->addMinutes(5)));
     }
 
     private function getAppUrl(string $redirect): string

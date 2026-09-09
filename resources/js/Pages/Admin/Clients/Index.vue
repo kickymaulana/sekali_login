@@ -10,6 +10,7 @@ interface OAuthClient {
   redirect?: string
   revoked: boolean
   lifecycle_status: 'development' | 'production'
+  icon_url: string | null
 }
 
 const props = defineProps<{
@@ -75,9 +76,10 @@ const confirmDelete = (client: OAuthClient) => {
       <div v-else class="clients-grid">
         <div v-for="client in clients" :key="client.id" class="client-card">
           <div class="card-header">
-            <div class="client-icon-box">
-              <var-icon name="cellphone" :size="22" color="#4f46e5" />
-            </div>
+             <div class="client-icon-box">
+               <img v-if="client.icon_url" :src="client.icon_url" :alt="`Icon ${client.name}`" class="client-icon-image" />
+               <var-icon v-else name="cellphone" :size="22" color="#4f46e5" />
+             </div>
              <div class="card-statuses">
                <var-chip size="small" :type="client.revoked ? 'danger' : 'success'" round>
                  {{ client.revoked ? 'Nonaktif' : 'Aktif' }}
@@ -272,6 +274,13 @@ const confirmDelete = (client: OAuthClient) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.client-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .client-name {

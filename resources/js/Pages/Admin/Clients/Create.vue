@@ -12,6 +12,38 @@ interface NewClient {
 const page = usePage()
 const newClient = computed<NewClient | null>(() => (page.props as any)?.new_client ?? null)
 const showCopied = ref(false)
+const iconInput = ref<HTMLInputElement | null>(null)
+const iconForm = useForm<{ icon: File | null }>({ icon: null })
+
+const compressIcon = (file: File): Promise<File> => new Promise((resolve, reject) => {
+  const image = new Image()
+  const reader = new FileReader()
+  reader.onload = () => { image.src = reader.result as string }
+  reader.onerror = () => reject(new Error('Gagal membaca icon'))
+  image.onerror = () => reject(new Error('Format icon tidak valid'))
+  image.onload = () => {
+    const scale = Math.min(1, 256 / Math.max(image.width, image.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.width * scale))
+    canvas.height = Math.max(1, Math.round(image.height * scale))
+    canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob((blob) => blob
+      ? resolve(new File([blob], 'icon.webp', { type: 'image/webp' }))
+      : reject(new Error('Gagal mengompres icon')), 'image/webp', 0.8)
+  }
+  reader.readAsDataURL(file)
+})
+
+const uploadIcon = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file || !newClient.value) return
+  try {
+    iconForm.icon = await compressIcon(file)
+    iconForm.post(route('admin.clients.icon.update', newClient.value.id), { forceFormData: true })
+  } catch {
+    Snackbar.error('Gagal memproses icon')
+  }
+}
 
 const form = useForm({
   name: '',
@@ -97,9 +129,15 @@ const copyToClipboard = async (text: string) => {
           <span>Jangan bagikan Client Secret ini kepada siapapun. Simpan di tempat aman.</span>
         </div>
 
-        <Link :href="route('admin.clients.index')" class="to-list-btn">
-          Ke Daftar Aplikasi
-        </Link>
+         <var-button type="primary" block @click="iconInput?.click()" :loading="iconForm.processing">
+           <var-icon name="image-edit" :size="18" />
+           Upload Icon Aplikasi
+         </var-button>
+         <input ref="iconInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="uploadIcon" />
+
+         <Link :href="route('admin.clients.index')" class="to-list-btn">
+           Ke Daftar Aplikasi
+         </Link>
       </div>
 
       <!-- Form -->

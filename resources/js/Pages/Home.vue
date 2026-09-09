@@ -18,6 +18,7 @@ interface ConnectedApp {
   category: string
   connectedAt: string
   status: string
+  icon_url: string | null
   url: string
 }
 
@@ -110,7 +111,8 @@ const handleTabChange = (index: number) => {
        <div v-else class="app-grid">
          <a v-for="app in connectedApps" :key="app.id" :href="app.url" target="_blank" rel="noopener noreferrer" class="app-card">
            <div class="app-icon-box">
-             <var-icon name="apps-box" :size="28" color="#4f46e5" />
+             <img v-if="app.icon_url" :src="app.icon_url" :alt="`Icon ${app.name}`" class="app-icon-image" />
+             <var-icon v-else name="apps-box" :size="28" color="#4f46e5" />
            </div>
            <div class="app-card-info">
              <h4>{{ app.name }}</h4>
@@ -408,6 +410,13 @@ const handleTabChange = (index: number) => {
   justify-content: center;
   border-radius: 16px;
   background: #e0e7ff;
+}
+
+.app-icon-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 16px;
 }
 
 .app-card-info {
