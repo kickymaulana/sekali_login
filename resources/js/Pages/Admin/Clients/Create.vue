@@ -17,6 +17,7 @@ const form = useForm({
   name: '',
   redirect: '',
   app_url: '',
+  lifecycle_status: 'development',
 })
 
 const submit = () => {
@@ -115,6 +116,11 @@ const copyToClipboard = async (text: string) => {
           <var-input v-model="form.app_url" label="URL Aplikasi" placeholder="Otomatis dari domain callback" :error-message="form.errors.app_url">
             <template #prepend-icon><var-icon name="web" color="#6366f1" /></template>
           </var-input>
+
+          <var-select v-model="form.lifecycle_status" label="Status Aplikasi" :error-message="form.errors.lifecycle_status">
+            <var-option label="Development" value="development" />
+            <var-option label="Production" value="production" />
+          </var-select>
 
           <div class="form-actions">
             <Link :href="route('admin.clients.index')" class="cancel-btn">Batal</Link>

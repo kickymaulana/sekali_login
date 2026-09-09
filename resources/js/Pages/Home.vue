@@ -7,6 +7,7 @@ interface AuthUser {
   id: number
   name: string
   email: string
+  avatar_url: string | null
   roles: string[]
   permissions: string[]
 }
@@ -64,7 +65,7 @@ const handleTabChange = (index: number) => {
       <template #left>
         <div class="user-greeting">
           <var-avatar
-            src="https://varletjs.org/cat.jpg"
+             :src="props.auth.user?.avatar_url || undefined"
             size="small"
             round
           />

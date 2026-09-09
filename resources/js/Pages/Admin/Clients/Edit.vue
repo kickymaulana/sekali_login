@@ -11,6 +11,7 @@ interface OAuthClient {
   redirect?: string
   revoked: boolean
   app_url?: string
+  lifecycle_status?: 'development' | 'production'
 }
 
 const props = defineProps<{
@@ -25,6 +26,7 @@ const form = useForm({
   name: props.client.name,
   redirect: redirectUrl,
   app_url: props.client.app_url || '',
+  lifecycle_status: props.client.lifecycle_status || 'production',
 })
 
 const showSecret = ref(false)
@@ -136,6 +138,11 @@ const confirmDelete = () => {
           <var-input v-model="form.app_url" label="URL Aplikasi" placeholder="https://app.com" :error-message="form.errors.app_url">
             <template #prepend-icon><var-icon name="web" color="#6366f1" /></template>
           </var-input>
+
+          <var-select v-model="form.lifecycle_status" label="Status Aplikasi" :error-message="form.errors.lifecycle_status">
+            <var-option label="Development" value="development" />
+            <var-option label="Production" value="production" />
+          </var-select>
 
           <div class="info-box">
             <var-icon name="information-outline" :size="18" color="#6366f1" />

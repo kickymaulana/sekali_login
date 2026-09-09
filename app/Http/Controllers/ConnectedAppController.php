@@ -62,17 +62,19 @@ class ConnectedAppController extends Controller
             ->select(
                 'oauth_clients.id as client_id',
                 'oauth_clients.name as app_name',
+                'oauth_clients.lifecycle_status',
                 'oauth_clients.app_url',
                 'oauth_clients.redirect_uris',
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
                 DB::raw('MAX(oauth_access_tokens.created_at) as last_connected')
             )
-            ->groupBy('oauth_clients.id', 'oauth_clients.name', 'oauth_clients.app_url', 'oauth_clients.redirect_uris')
+            ->groupBy('oauth_clients.id', 'oauth_clients.name', 'oauth_clients.lifecycle_status', 'oauth_clients.app_url', 'oauth_clients.redirect_uris')
             ->orderByDesc('last_connected')
             ->paginate(8)
             ->through(fn ($app) => [
                 'client_id' => $app->client_id,
                 'app_name' => $app->app_name,
+                'lifecycle_status' => $app->lifecycle_status,
                 'url' => $this->getAppUrl($app->app_url, $app->redirect_uris),
                 'token_count' => $app->token_count,
                 'last_connected' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),

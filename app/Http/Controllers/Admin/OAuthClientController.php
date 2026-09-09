@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Laravel\Passport\Client;
 
@@ -42,6 +43,7 @@ class OAuthClientController extends Controller
             'name' => 'required|string|max:255',
             'redirect' => 'required|url',
             'app_url' => 'nullable|url|max:255',
+            'lifecycle_status' => ['required', Rule::in(['development', 'production'])],
         ]);
 
         $secret = Str::random(40);
@@ -52,6 +54,7 @@ class OAuthClientController extends Controller
             'owner_type' => get_class($request->user()),
             'name' => $request->name,
             'app_url' => $request->app_url ?: $this->getAppUrl($request->redirect),
+            'lifecycle_status' => $request->lifecycle_status,
             'secret' => $secret,
             'provider' => null,
             'redirect_uris' => [$request->redirect],
@@ -74,6 +77,7 @@ class OAuthClientController extends Controller
             'name' => 'required|string|max:255',
             'redirect' => 'required|url',
             'app_url' => 'nullable|url|max:255',
+            'lifecycle_status' => ['required', Rule::in(['development', 'production'])],
         ]);
 
         $client = Client::where('id', $clientId)->first();
@@ -82,6 +86,7 @@ class OAuthClientController extends Controller
             $client->update([
                 'name' => $request->name,
                 'app_url' => $request->app_url ?: $this->getAppUrl($request->redirect),
+                'lifecycle_status' => $request->lifecycle_status,
                 'redirect_uris' => [$request->redirect],
             ]);
         }

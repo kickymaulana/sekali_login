@@ -4,6 +4,7 @@ import { Head, router } from '@inertiajs/vue3'
 interface AppItem {
   client_id: string
   app_name: string
+  lifecycle_status: 'development' | 'production'
   url: string
   token_count: number
   last_connected: string
@@ -43,6 +44,7 @@ const props = defineProps<{ apps: PaginatedApps }>()
            </div>
            <div class="app-detail">
              <span class="app-name">{{ app.app_name }}</span>
+             <span class="app-status" :class="app.lifecycle_status">{{ app.lifecycle_status === 'production' ? 'Production' : 'Development' }}</span>
              <span class="app-date">{{ app.token_count }} token · Terakhir {{ app.last_connected }}</span>
            </div>
          </a>
@@ -78,5 +80,8 @@ const props = defineProps<{ apps: PaginatedApps }>()
 .app-icon { width:40px;height:40px;border-radius:12px;background:#e0e7ff;display:flex;align-items:center;justify-content:center; }
 .app-detail { display:flex;flex-direction:column; }
 .app-name { font-size:14px;font-weight:600;color:#0f172a; }
+.app-status { font-size:11px;font-weight:600; }
+.app-status.production { color:#16a34a; }
+.app-status.development { color:#d97706; }
 .app-date { font-size:11px;color:#94a3b8; }
 </style>

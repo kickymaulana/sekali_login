@@ -9,6 +9,7 @@ interface OAuthClient {
   redirect_uris: string[] | string
   redirect?: string
   revoked: boolean
+  lifecycle_status: 'development' | 'production'
 }
 
 const props = defineProps<{
@@ -77,9 +78,14 @@ const confirmDelete = (client: OAuthClient) => {
             <div class="client-icon-box">
               <var-icon name="cellphone" :size="22" color="#4f46e5" />
             </div>
-            <var-chip size="small" :type="client.revoked ? 'danger' : 'success'" round>
-              {{ client.revoked ? 'Nonaktif' : 'Aktif' }}
-            </var-chip>
+             <div class="card-statuses">
+               <var-chip size="small" :type="client.revoked ? 'danger' : 'success'" round>
+                 {{ client.revoked ? 'Nonaktif' : 'Aktif' }}
+               </var-chip>
+               <var-chip size="small" :type="client.lifecycle_status === 'production' ? 'primary' : 'warning'" round>
+                 {{ client.lifecycle_status === 'production' ? 'Production' : 'Development' }}
+               </var-chip>
+             </div>
           </div>
           <h3 class="client-name">{{ client.name }}</h3>
           <div class="card-body">
@@ -249,6 +255,13 @@ const confirmDelete = (client: OAuthClient) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.card-statuses {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
 }
 
 .client-icon-box {

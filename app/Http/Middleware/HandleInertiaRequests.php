@@ -41,14 +41,15 @@ class HandleInertiaRequests extends Middleware
             'app_url' => config('app.url'),
             'new_client' => fn () => $request->session()->get('new_client'),
             'auth' => [
-            'user' => $request->user() ? [
-                'id' => $request->user()->id,
-                'name' => $request->user()->name,
-                'email' => $request->user()->email,
-                'roles' => $request->user()->getRoleNames(), // Ambil daftar role
-                'permissions' => $request->user()->getAllPermissions()->pluck('name'), // Ambil daftar permission
-            ] : null,
-        ],
+                'user' => $request->user() ? [
+                    'id' => $request->user()->id,
+                    'name' => $request->user()->name,
+                    'email' => $request->user()->email,
+                    'avatar_url' => $request->user()->avatar_path ? route('profile.avatar') : null,
+                    'roles' => $request->user()->getRoleNames(), // Ambil daftar role
+                    'permissions' => $request->user()->getAllPermissions()->pluck('name'), // Ambil daftar permission
+                ] : null,
+            ],
         ];
     }
 }

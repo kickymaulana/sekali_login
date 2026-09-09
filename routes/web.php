@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ConnectedAppController;
+use App\Http\Controllers\ProfileController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -41,9 +42,11 @@ Route::middleware('auth')->group(function () {
             ->join('oauth_clients', 'oauth_access_tokens.client_id', '=', 'oauth_clients.id')
             ->where('oauth_access_tokens.user_id', $user->id)
             ->where('oauth_access_tokens.revoked', false)
+            ->where('oauth_clients.lifecycle_status', 'production')
             ->select(
                 'oauth_clients.id as id',
                 'oauth_clients.name',
+                DB::raw('MAX(oauth_clients.lifecycle_status) as lifecycle_status'),
                 DB::raw('MAX(oauth_clients.app_url) as app_url'),
                 DB::raw('MAX(oauth_clients.redirect_uris) as redirect_uris'),
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
@@ -56,7 +59,7 @@ Route::middleware('auth')->group(function () {
                 'name' => $app->name,
                 'category' => 'OAuth2 App',
                 'connectedAt' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),
-                'status' => 'Active',
+                'status' => 'Production',
                 'url' => $getAppUrl($app->app_url, $app->redirect_uris),
                 'token_count' => $app->token_count,
             ]);
@@ -67,6 +70,7 @@ Route::middleware('auth')->group(function () {
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'avatar_url' => $user->avatar_path ? route('profile.avatar') : null,
                     'roles' => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ],
@@ -82,6 +86,8 @@ Route::middleware('auth')->group(function () {
     })->name('dashboard');
 
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+    Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
+    Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
 
     Route::get('/profile', function (Request $request) {
         $user = $request->user();
@@ -92,6 +98,7 @@ Route::middleware('auth')->group(function () {
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
+                    'avatar_url' => $user->avatar_path ? route('profile.avatar') : null,
                     'roles' => $user->getRoleNames(),
                     'permissions' => $user->getAllPermissions()->pluck('name'),
                 ],

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Head, Link, router } from '@inertiajs/vue3'
+import { Head, Link, router, useForm } from '@inertiajs/vue3'
 
 // Ikut digunakan untuk akses ke halaman Ubah Password
 // route, router, Link sudah diimpor di atas
@@ -9,6 +9,7 @@ interface AuthUser {
   id: number
   name: string
   email: string
+  avatar_url: string | null
   roles: string[]
   permissions: string[]
 }
@@ -21,6 +22,48 @@ interface Props {
 
 const props = defineProps<Props>()
 const activeTab = ref(3)
+const avatarInput = ref<HTMLInputElement | null>(null)
+const avatarForm = useForm<{ avatar: File | null }>({ avatar: null })
+
+const selectAvatar = () => avatarInput.value?.click()
+
+const compressAvatar = (file: File): Promise<File> => new Promise((resolve, reject) => {
+  const image = new Image()
+  const reader = new FileReader()
+
+  reader.onload = () => { image.src = reader.result as string }
+  reader.onerror = () => reject(new Error('Gagal membaca foto'))
+  image.onerror = () => reject(new Error('Format foto tidak valid'))
+  image.onload = () => {
+    const scale = Math.min(1, 512 / Math.max(image.width, image.height))
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(image.width * scale))
+    canvas.height = Math.max(1, Math.round(image.height * scale))
+    canvas.getContext('2d')?.drawImage(image, 0, 0, canvas.width, canvas.height)
+    canvas.toBlob((blob) => {
+      if (!blob) return reject(new Error('Gagal mengompres foto'))
+      resolve(new File([blob], `${file.name.replace(/\.[^.]+$/, '')}.webp`, { type: 'image/webp' }))
+    }, 'image/webp', 0.8)
+  }
+
+  reader.readAsDataURL(file)
+})
+
+const uploadAvatar = async (event: Event) => {
+  const file = (event.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  try {
+    avatarForm.avatar = await compressAvatar(file)
+    avatarForm.post(route('profile.avatar.update'), {
+      forceFormData: true,
+      preserveScroll: true,
+      onFinish: () => { avatarForm.reset('avatar') },
+    })
+  } catch {
+    avatarForm.reset('avatar')
+  }
+}
 
 const handleLogout = () => {
   router.post(route('logout'))
@@ -46,7 +89,7 @@ const handleAddClient = () => {
       <template #left>
         <div class="user-greeting">
           <var-avatar
-            src="https://varletjs.org/cat.jpg"
+             :src="props.auth.user?.avatar_url || undefined"
             size="small"
             round
           />
@@ -67,12 +110,18 @@ const handleAddClient = () => {
       <!-- Profile Avatar Card -->
       <div class="profile-card">
         <div class="avatar-section">
-          <var-avatar
-            src="https://varletjs.org/cat.jpg"
-            size="72"
-            round
-          />
-          <div class="avatar-info">
+           <div class="avatar-edit-wrap">
+             <var-avatar
+               :src="props.auth.user?.avatar_url || undefined"
+               size="72"
+               round
+             />
+             <var-button size="small" round type="primary" class="avatar-edit-button" @click="selectAvatar" :loading="avatarForm.processing">
+               <var-icon name="camera" :size="16" />
+             </var-button>
+             <input ref="avatarInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="uploadAvatar" />
+           </div>
+           <div class="avatar-info">
             <h2 class="profile-name">{{ props.auth.user?.name }}</h2>
             <span class="profile-email">{{ props.auth.user?.email }}</span>
             <div class="profile-roles">
@@ -283,6 +332,19 @@ const handleAddClient = () => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.avatar-edit-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.avatar-edit-button {
+  position: absolute;
+  right: -6px;
+  bottom: -4px;
+  width: 28px;
+  height: 28px;
 }
 
 .avatar-info {
