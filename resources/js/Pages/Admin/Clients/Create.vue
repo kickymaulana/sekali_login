@@ -16,6 +16,7 @@ const showCopied = ref(false)
 const form = useForm({
   name: '',
   redirect: '',
+  app_url: '',
 })
 
 const submit = () => {
@@ -109,6 +110,10 @@ const copyToClipboard = async (text: string) => {
 
           <var-input v-model="form.redirect" label="Callback / Redirect URL" placeholder="https://app.com/auth/callback" :error-message="form.errors.redirect">
             <template #prepend-icon><var-icon name="link-variant" color="#6366f1" /></template>
+          </var-input>
+
+          <var-input v-model="form.app_url" label="URL Aplikasi" placeholder="Otomatis dari domain callback" :error-message="form.errors.app_url">
+            <template #prepend-icon><var-icon name="web" color="#6366f1" /></template>
           </var-input>
 
           <div class="form-actions">

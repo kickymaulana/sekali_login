@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
 
 // Interfaces
@@ -11,27 +11,19 @@ interface AuthUser {
   permissions: string[]
 }
 
-interface SummaryCount {
-  activeApps: number
-  activeSessions: number
-  tokensIssued: number
-  rolesCount: number
-}
-
 interface ConnectedApp {
-  id: number
+  id: string
   name: string
   category: string
   connectedAt: string
   status: string
-  icon: string
+  url: string
 }
 
 interface Props {
   auth: {
     user: AuthUser | null
   }
-  summary?: SummaryCount
   connectedApps?: ConnectedApp[]
 }
 
@@ -40,48 +32,8 @@ const props = defineProps<Props>()
 // Bottom Navigation Active State (0: Beranda, 1: Aplikasi, 2: Keamanan, 3: Profil)
 const activeTab = ref(0)
 
-// Format data statistik SSO
-const summaryData = computed(() => [
-  {
-    title: 'App Terhubung',
-    count: props.summary?.activeApps ?? 1,
-    icon: 'cellphone',
-    color: '#6366f1',
-    bgColor: '#e0e7ff',
-  },
-  {
-    title: 'Sesi Aktif',
-    count: props.summary?.activeSessions ?? 1,
-    icon: 'star',
-    color: '#10b981',
-    bgColor: '#d1fae5',
-  },
-  {
-    title: 'Token Diterbitkan',
-    count: props.summary?.tokensIssued ?? 0,
-    icon: 'code-json',
-    color: '#f59e0b',
-    bgColor: '#fef3c7',
-  },
-  {
-    title: 'Role Diterima',
-    count: props.summary?.rolesCount ?? props.auth.user?.roles.length ?? 0,
-    icon: 'download',
-    color: '#8b5cf6',
-    bgColor: '#ede9fe',
-  },
-])
-
 const handleLogout = () => {
   router.post(route('logout'))
-}
-
-const handleAddClient = () => {
-  if (isAdmin.value) {
-    router.get(route('admin.clients.index'))
-  } else {
-    alert('Fitur Pendaftaran Aplikasi Klien Baru hanya untuk Admin!')
-  }
 }
 
 const handleTabChange = (index: number) => {
@@ -94,10 +46,6 @@ const handleTabChange = (index: number) => {
   }
 }
 
-// Helper untuk mengecek apakah user punya role 'admin'
-const isAdmin = computed(() => {
-  return props.auth.user?.roles?.includes('admin') ?? false
-})
 </script>
 
 <template>
@@ -144,96 +92,6 @@ const isAdmin = computed(() => {
         <var-icon name="shield-check" class="welcome-icon" />
       </div>
 
-      <!-- Stats Grid -->
-      <div class="section-header">
-        <h3 class="section-title">Ringkasan Akun</h3>
-      </div>
-
-      <div class="stats-grid">
-        <div v-for="(stat, index) in summaryData" :key="index" class="stat-card">
-          <div class="stat-icon-wrapper" :style="{ backgroundColor: stat.bgColor }">
-            <var-icon :name="stat.icon" :size="22" :color="stat.color" />
-          </div>
-          <div class="stat-info">
-            <span class="stat-count">{{ stat.count }}</span>
-            <span class="stat-title">{{ stat.title }}</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Khusus Tampilan Admin (Navigasi CRUD) -->
-      <div v-if="isAdmin" class="admin-section">
-        <div class="section-header">
-          <h3 class="section-title">Panel Admin SSO 🛠️</h3>
-        </div>
-
-        <div class="admin-menu-grid">
-          <Link :href="route('admin.clients.index')" class="admin-menu-card">
-            <div class="menu-icon-box bg-indigo">
-              <var-icon name="apps-box" :size="24" color="#4f46e5" />
-            </div>
-            <div class="menu-info">
-              <h4>OAuth Clients</h4>
-              <p>Kelola Client ID & Secret App Eksternal</p>
-            </div>
-          </Link>
-
-          <Link :href="route('admin.users.index')" class="admin-menu-card">
-            <div class="menu-icon-box bg-emerald">
-              <var-icon name="account-group" :size="24" color="#10b981" />
-            </div>
-            <div class="menu-info">
-              <h4>User Management</h4>
-              <p>Tambah, Edit & Reset Password Pengguna</p>
-            </div>
-          </Link>
-
-          <Link :href="route('admin.roles.index')" class="admin-menu-card">
-            <div class="menu-icon-box bg-purple">
-              <var-icon name="shield-account" :size="24" color="#8b5cf6" />
-            </div>
-            <div class="menu-info">
-              <h4>Roles & Permissions</h4>
-              <p>Atur Hak Akses Spatie Secara Terpusat</p>
-            </div>
-          </Link>
-        </div>
-      </div>
-
-      <!-- Quick Action Category Scroll -->
-      <div class="section-header">
-        <h3 class="section-title">Akses Cepat SSO</h3>
-      </div>
-
-      <div class="category-scroll">
-        <Link :href="route('password.change')" class="category-item">
-          <var-button type="primary" fab tonal :elevation="false">
-            <var-icon name="checkbox-marked-circle" :size="24" />
-          </var-button>
-          <span>Ubah Password</span>
-        </Link>
-
-        <div class="category-item">
-          <var-button type="info" fab tonal :elevation="false">
-            <var-icon name="cake-variant" :size="24" />
-          </var-button>
-          <span>Role & Izin</span>
-        </div>
-
-        <div class="category-item">
-          <var-button type="success" fab tonal :elevation="false">
-            <var-icon name="card-account-details-outline" :size="24" />
-          </var-button>
-          <span>Sesi Login</span>
-        </div>
-
-        <div class="category-item">
-          <var-button type="warning" fab tonal :elevation="false">
-            <var-icon name="code-json" :size="24" />
-          </var-button>
-          <span>API Tokens</span>
-        </div>
-      </div>
 
       <!-- Token Aktif List -->
       <div class="section-header space-between">
@@ -248,28 +106,18 @@ const isAdmin = computed(() => {
       </div>
 
       <!-- List Token Aktif dari Database -->
-      <div v-else class="request-list">
-        <div v-for="app in connectedApps" :key="app.id" class="request-card">
-          <div class="request-main">
-            <div class="request-header">
-              <span class="request-code">{{ app.category }}</span>
-              <var-chip type="success" size="small" round>
-                {{ app.status }}
-              </var-chip>
-            </div>
-            <h4 class="request-item-title">{{ app.name }}</h4>
-            <div class="request-footer">
-              <span class="request-category">
-                <var-icon name="calendar-month-outline" :size="14" /> Diberi Izin: {{ app.connectedAt }}
-              </span>
-                <Link :href="route('aplikasi-terhubung')">
-                  <var-button size="mini" type="danger">Detail</var-button>
-                </Link>
-
-            </div>
-          </div>
-        </div>
-      </div>
+       <div v-else class="app-grid">
+         <a v-for="app in connectedApps" :key="app.id" :href="app.url" target="_blank" rel="noopener noreferrer" class="app-card">
+           <div class="app-icon-box">
+             <var-icon name="apps-box" :size="28" color="#4f46e5" />
+           </div>
+           <div class="app-card-info">
+             <h4>{{ app.name }}</h4>
+             <span>{{ app.category }}</span>
+           </div>
+           <var-icon name="open-in-new" :size="20" color="#94a3b8" />
+         </a>
+       </div>
     </main>
 
     <!-- Bottom Navigation -->
@@ -279,16 +127,14 @@ const isAdmin = computed(() => {
       fixed
       placeholder
       @change="handleTabChange"
-      @fab-click="handleAddClient"
+
     >
       <var-bottom-navigation-item label="Beranda" icon="home-outline" />
       <var-bottom-navigation-item label="Aplikasi" icon="cellphone" />
       <var-bottom-navigation-item label="Keamanan" icon="lock" />
       <var-bottom-navigation-item label="Profil" icon="account-circle-outline" />
 
-      <template #fab>
-        <var-icon name="plus" :size="28" />
-      </template>
+
     </var-bottom-navigation>
   </div>
 </template>
@@ -528,11 +374,67 @@ const isAdmin = computed(() => {
   font-size: 13px;
 }
 
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.app-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.app-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(79, 70, 229, 0.12);
+}
+
+.app-icon-box {
+  width: 52px;
+  height: 52px;
+  flex: 0 0 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: #e0e7ff;
+}
+
+.app-card-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.app-card-info h4 {
+  margin: 0 0 4px;
+  color: #0f172a;
+  font-size: 15px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.app-card-info span {
+  color: #64748b;
+  font-size: 12px;
+}
+
 .request-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
+
 .request-card {
   background: #ffffff;
   border-radius: 16px;

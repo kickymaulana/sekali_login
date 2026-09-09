@@ -5,8 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Laravel\Passport\Client;
 use Inertia\Inertia;
+use Laravel\Passport\Client;
 
 class OAuthClientController extends Controller
 {
@@ -18,7 +18,7 @@ class OAuthClientController extends Controller
             ->get();
 
         return Inertia::render('Admin/Clients/Index', [
-            'clients' => $clients
+            'clients' => $clients,
         ]);
     }
 
@@ -32,7 +32,7 @@ class OAuthClientController extends Controller
         $client = Client::where('id', $clientId)->firstOrFail();
 
         return Inertia::render('Admin/Clients/Edit', [
-            'client' => $client
+            'client' => $client,
         ]);
     }
 
@@ -41,6 +41,7 @@ class OAuthClientController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'redirect' => 'required|url',
+            'app_url' => 'nullable|url|max:255',
         ]);
 
         $secret = Str::random(40);
@@ -50,6 +51,7 @@ class OAuthClientController extends Controller
             'owner_id' => $request->user()->id,
             'owner_type' => get_class($request->user()),
             'name' => $request->name,
+            'app_url' => $request->app_url ?: $this->getAppUrl($request->redirect),
             'secret' => $secret,
             'provider' => null,
             'redirect_uris' => [$request->redirect],
@@ -62,7 +64,7 @@ class OAuthClientController extends Controller
                 'id' => $client->id,
                 'name' => $request->name,
                 'secret' => $secret,
-            ]
+            ],
         ]);
     }
 
@@ -71,6 +73,7 @@ class OAuthClientController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'redirect' => 'required|url',
+            'app_url' => 'nullable|url|max:255',
         ]);
 
         $client = Client::where('id', $clientId)->first();
@@ -78,11 +81,19 @@ class OAuthClientController extends Controller
         if ($client) {
             $client->update([
                 'name' => $request->name,
+                'app_url' => $request->app_url ?: $this->getAppUrl($request->redirect),
                 'redirect_uris' => [$request->redirect],
             ]);
         }
 
         return redirect()->route('admin.clients.index');
+    }
+
+    private function getAppUrl(string $redirect): string
+    {
+        $parts = parse_url($redirect);
+
+        return ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? $redirect).(isset($parts['port']) ? ':'.$parts['port'] : '');
     }
 
     public function destroy($clientId)

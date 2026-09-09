@@ -10,6 +10,7 @@ interface OAuthClient {
   redirect_uris: string[] | string
   redirect?: string
   revoked: boolean
+  app_url?: string
 }
 
 const props = defineProps<{
@@ -23,6 +24,7 @@ const redirectUrl = Array.isArray(props.client.redirect_uris)
 const form = useForm({
   name: props.client.name,
   redirect: redirectUrl,
+  app_url: props.client.app_url || '',
 })
 
 const showSecret = ref(false)
@@ -129,6 +131,10 @@ const confirmDelete = () => {
 
           <var-input v-model="form.redirect" label="Callback / Redirect URL" placeholder="https://app.com/auth/callback" :error-message="form.errors.redirect">
             <template #prepend-icon><var-icon name="link-variant" color="#6366f1" /></template>
+          </var-input>
+
+          <var-input v-model="form.app_url" label="URL Aplikasi" placeholder="https://app.com" :error-message="form.errors.app_url">
+            <template #prepend-icon><var-icon name="web" color="#6366f1" /></template>
           </var-input>
 
           <div class="info-box">

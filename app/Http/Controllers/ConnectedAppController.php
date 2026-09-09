@@ -8,6 +8,18 @@ use Inertia\Inertia;
 
 class ConnectedAppController extends Controller
 {
+    private function getAppUrl(?string $appUrl, string $redirectUris): string
+    {
+        if ($appUrl) {
+            return $appUrl;
+        }
+
+        $redirect = json_decode($redirectUris, true)[0] ?? $redirectUris;
+        $parts = parse_url($redirect);
+
+        return ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? $redirect).(isset($parts['port']) ? ':'.$parts['port'] : '');
+    }
+
     public function index()
     {
         $userId = auth()->id();
@@ -50,19 +62,21 @@ class ConnectedAppController extends Controller
             ->select(
                 'oauth_clients.id as client_id',
                 'oauth_clients.name as app_name',
+                'oauth_clients.app_url',
+                'oauth_clients.redirect_uris',
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
                 DB::raw('MAX(oauth_access_tokens.created_at) as last_connected')
             )
-            ->groupBy('oauth_clients.id', 'oauth_clients.name')
+            ->groupBy('oauth_clients.id', 'oauth_clients.name', 'oauth_clients.app_url', 'oauth_clients.redirect_uris')
             ->orderByDesc('last_connected')
-            ->get()
-            ->map(fn ($app) => [
+            ->paginate(8)
+            ->through(fn ($app) => [
                 'client_id' => $app->client_id,
                 'app_name' => $app->app_name,
+                'url' => $this->getAppUrl($app->app_url, $app->redirect_uris),
                 'token_count' => $app->token_count,
                 'last_connected' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),
-            ])
-            ->toArray();
+            ]);
 
         return Inertia::render('Profile/ConnectedAppsSummary', [
             'apps' => $apps,

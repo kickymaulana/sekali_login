@@ -26,6 +26,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function (Request $request) {
         $user = $request->user();
 
+        $getAppUrl = function (?string $appUrl, string $redirectUris): string {
+            if ($appUrl) {
+                return $appUrl;
+            }
+
+            $redirect = json_decode($redirectUris, true)[0] ?? $redirectUris;
+            $parts = parse_url($redirect);
+
+            return ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? $redirect).(isset($parts['port']) ? ':'.$parts['port'] : '');
+        };
+
         $connectedApps = DB::table('oauth_access_tokens')
             ->join('oauth_clients', 'oauth_access_tokens.client_id', '=', 'oauth_clients.id')
             ->where('oauth_access_tokens.user_id', $user->id)
@@ -33,6 +44,8 @@ Route::middleware('auth')->group(function () {
             ->select(
                 'oauth_clients.id as id',
                 'oauth_clients.name',
+                DB::raw('MAX(oauth_clients.app_url) as app_url'),
+                DB::raw('MAX(oauth_clients.redirect_uris) as redirect_uris'),
                 DB::raw('COUNT(oauth_access_tokens.id) as token_count'),
                 DB::raw('MAX(oauth_access_tokens.created_at) as last_connected'),
             )
@@ -44,7 +57,7 @@ Route::middleware('auth')->group(function () {
                 'category' => 'OAuth2 App',
                 'connectedAt' => Carbon::parse($app->last_connected)->translatedFormat('d M Y'),
                 'status' => 'Active',
-                'icon' => 'code-json',
+                'url' => $getAppUrl($app->app_url, $app->redirect_uris),
                 'token_count' => $app->token_count,
             ]);
 
