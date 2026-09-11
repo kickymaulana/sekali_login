@@ -71,7 +71,7 @@ const handleLogout = () => {
 
 const handleTabChange = (index: number) => {
   if (index === 0) router.get(route('dashboard'))
-  else if (index === 1) router.get(route('aplikasi-terhubung'))
+  else if (index === 1) router.get(route('aplikasi-belum-terhubung'))
   else if (index === 2) router.get(route('security'))
 }
 

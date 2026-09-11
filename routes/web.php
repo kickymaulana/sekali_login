@@ -110,6 +110,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/token-aktif', [ConnectedAppController::class, 'index'])->name('token-aktif');
     Route::get('/aplikasi-terhubung', [ConnectedAppController::class, 'summary'])->name('aplikasi-terhubung');
+    Route::get('/aplikasi-belum-terhubung', [ConnectedAppController::class, 'unconnected'])->name('aplikasi-belum-terhubung');
     Route::get('/aplikasi-terhubung/{clientId}/icon', [ConnectedAppController::class, 'icon'])->name('aplikasi-terhubung.icon');
     Route::get('/aplikasi-terhubung/{clientId}', [ConnectedAppController::class, 'appTokens'])->name('aplikasi-terhubung.tokens');
     Route::post('/aplikasi-terhubung/{clientId}/revoke-all', [ConnectedAppController::class, 'revokeAll'])->name('aplikasi-terhubung.revoke-all');

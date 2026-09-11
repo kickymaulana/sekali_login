@@ -5,7 +5,7 @@ import { Head, Link, router } from '@inertiajs/vue3'
 const activeTab = ref(2)
 const handleTabChange = (i: number) => {
     if (i === 0) router.get(route('dashboard'))
-    else if (i === 1) router.get(route('aplikasi-terhubung'))
+    else if (i === 1) router.get(route('aplikasi-belum-terhubung'))
     else if (i === 3) router.get(route('profile'))
 }
 </script>

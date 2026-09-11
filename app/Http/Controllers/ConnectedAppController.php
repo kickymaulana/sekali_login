@@ -102,6 +102,34 @@ class ConnectedAppController extends Controller
         ]);
     }
 
+    public function unconnected()
+    {
+        $userId = auth()->id();
+
+        $apps = DB::table('oauth_clients')
+            ->where('oauth_clients.lifecycle_status', 'production')
+            ->whereNotExists(function ($query) use ($userId) {
+                $query->selectRaw('1')
+                    ->from('oauth_access_tokens')
+                    ->whereColumn('oauth_access_tokens.client_id', 'oauth_clients.id')
+                    ->where('oauth_access_tokens.user_id', $userId)
+                    ->where('oauth_access_tokens.revoked', false);
+            })
+            ->select('id as client_id', 'name as app_name', 'icon_path', 'app_url', 'redirect_uris')
+            ->orderBy('name')
+            ->paginate(8)
+            ->through(fn ($app) => [
+                'client_id' => $app->client_id,
+                'app_name' => $app->app_name,
+                'icon_url' => $this->getIconUrl($app->icon_path, $app->client_id) ?: null,
+                'url' => $this->getAppUrl($app->app_url, $app->redirect_uris),
+            ]);
+
+        return Inertia::render('Profile/UnconnectedApps', [
+            'apps' => $apps,
+        ]);
+    }
+
     public function appTokens(string $clientId)
     {
         $app = DB::table('oauth_clients')
