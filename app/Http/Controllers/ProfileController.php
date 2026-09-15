@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -25,10 +27,17 @@ class ProfileController extends Controller
         return back()->with('success', 'Foto profil berhasil diperbarui.');
     }
 
-    public function avatar(Request $request)
+    public function avatar(Request $request): RedirectResponse
     {
         $user = $request->user();
 
+        abort_unless($user->avatar_path, 404);
+
+        return redirect(Storage::disk('s3')->temporaryUrl($user->avatar_path, now()->addMinutes(5)));
+    }
+
+    public function publicAvatar(User $user): RedirectResponse
+    {
         abort_unless($user->avatar_path, 404);
 
         return redirect(Storage::disk('s3')->temporaryUrl($user->avatar_path, now()->addMinutes(5)));

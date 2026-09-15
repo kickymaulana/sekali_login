@@ -90,6 +90,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar.update');
     Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
+    Route::get('/avatars/{user}', [ProfileController::class, 'publicAvatar'])->middleware('signed')->name('profile.avatar.public');
 
     Route::get('/profile', function (Request $request) {
         $user = $request->user();
