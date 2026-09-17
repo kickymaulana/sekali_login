@@ -48,7 +48,7 @@ const submit = () => {
 
       <form @submit.prevent="submit" class="form">
         <div class="field">
-          <label>NIK (Nomor Induk) <span class="req">*</span></label>
+          <label>NIK (Nomor Induk Karyawan) BUKAN KTP <span class="req">*</span></label>
           <div class="input-wrap">
             <input v-model="form.nik" placeholder="Masukkan NIK karyawan" class="input" />
           </div>
