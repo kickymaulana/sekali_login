@@ -4,9 +4,9 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use Inertia\Inertia;
 
 class RoleController extends Controller
 {
@@ -16,8 +16,8 @@ class RoleController extends Controller
         $permissions = Permission::all();
 
         return Inertia::render('Admin/Roles/Index', [
-            'roles'       => $roles,
-            'permissions' => $permissions
+            'roles' => $roles,
+            'permissions' => $permissions,
         ]);
     }
 
@@ -26,7 +26,7 @@ class RoleController extends Controller
         $permissions = Permission::all();
 
         return Inertia::render('Admin/Roles/Create', [
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
@@ -37,15 +37,15 @@ class RoleController extends Controller
 
         return Inertia::render('Admin/Roles/Edit', [
             'role' => $role,
-            'permissions' => $permissions
+            'permissions' => $permissions,
         ]);
     }
 
     public function store(Request $request)
     {
         $request->validate([
-            'name'          => 'required|string|unique:roles,name',
-            'permissions'   => 'array',
+            'name' => 'required|string|unique:roles,name',
+            'permissions' => 'array',
         ]);
 
         $role = Role::create(['name' => $request->name]);
@@ -60,7 +60,7 @@ class RoleController extends Controller
     public function update(Request $request, Role $role)
     {
         $request->validate([
-            'name'        => 'required|string|unique:roles,name,' . $role->id,
+            'name' => 'required|string|unique:roles,name,'.$role->id,
             'permissions' => 'array',
         ]);
 
@@ -73,7 +73,7 @@ class RoleController extends Controller
     public function destroy(Role $role)
     {
         $role->delete();
+
         return redirect()->route('admin.roles.index');
     }
 }
-

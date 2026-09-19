@@ -9,9 +9,17 @@ interface UserItem {
   roles: { name: string }[]
 }
 
+interface ConnectedApp {
+  client_id: string
+  app_name: string
+  token_count: number
+  last_connected: string
+}
+
 const props = defineProps<{
   user: UserItem
   roles: string[]
+  connectedApps: ConnectedApp[]
 }>()
 
 const form = useForm({
@@ -73,6 +81,17 @@ const confirmDelete = () => {
         <var-icon name="account-edit" class="hero-icon" />
       </div>
 
+      <div class="connected-apps-card">
+        <h3>Aplikasi Aktif Terhubung</h3>
+        <p v-if="!connectedApps.length" class="empty-apps">Belum ada aplikasi aktif.</p>
+        <div v-for="app in connectedApps" :key="app.client_id" class="connected-app">
+          <div>
+            <strong>{{ app.app_name }}</strong>
+            <span>{{ app.token_count }} token aktif · Terakhir: {{ app.last_connected }}</span>
+          </div>
+        </div>
+      </div>
+
       <div class="form-container">
         <form @submit.prevent="submit">
           <var-input v-model="form.nik" label="NIK" placeholder="NIK Karyawan" :error-message="form.errors.nik">
@@ -107,6 +126,11 @@ const confirmDelete = () => {
           </div>
         </form>
       </div>
+
+      <var-button type="danger" block @click="confirmDelete" class="delete-user-btn">
+        <var-icon name="delete-outline" :size="20" />
+        Hapus User
+      </var-button>
     </main>
   </div>
 </template>
@@ -193,6 +217,35 @@ const confirmDelete = () => {
   opacity: 0.25;
 }
 
+.connected-apps-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 20px;
+  border: 1px solid #f1f5f9;
+}
+
+.connected-apps-card h3 {
+  margin: 0 0 12px;
+  font-size: 16px;
+}
+
+.connected-app {
+  padding: 12px 0;
+  border-top: 1px solid #f1f5f9;
+}
+
+.connected-app strong,
+.connected-app span {
+  display: block;
+}
+
+.connected-app span,
+.empty-apps {
+  margin: 4px 0 0;
+  color: #64748b;
+  font-size: 12px;
+}
+
 .form-container {
   background: #ffffff;
   border-radius: 20px;
@@ -235,5 +288,9 @@ const confirmDelete = () => {
 .submit-btn {
   font-weight: 700 !important;
   height: 40px !important;
+}
+
+.delete-user-btn {
+  margin-bottom: 20px;
 }
 </style>

@@ -100,7 +100,6 @@ const confirmDelete = (user: UserItem) => {
               </td>
               <td style="text-align: right" class="action-cell">
                 <Link :href="route('admin.users.edit', user.id)" class="action-link edit-link">Edit</Link>
-                <var-button size="mini" type="danger" text @click="confirmDelete(user)">Hapus</var-button>
               </td>
             </tr>
             <tr v-if="!users.data.length">

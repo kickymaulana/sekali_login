@@ -3,10 +3,10 @@
 namespace App\Mcp\Servers;
 
 use App\Mcp\Tools\GetUserInfoTool;
+use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Attributes\Instructions;
 use Laravel\Mcp\Server\Attributes\Name;
 use Laravel\Mcp\Server\Attributes\Version;
-use Laravel\Mcp\Server;
 
 #[Name('SSO Management Server')]
 #[Version('1.0.0')]
