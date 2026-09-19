@@ -7,6 +7,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -123,6 +124,8 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
+        $avatarPath = $user->avatar_path;
+
         DB::transaction(function () use ($user) {
             DB::table('oauth_access_tokens')
                 ->where('user_id', $user->id)
@@ -132,6 +135,10 @@ class UserController extends Controller
             $user->syncRoles([]);
             $user->delete();
         });
+
+        if ($avatarPath) {
+            Storage::disk('s3')->delete($avatarPath);
+        }
 
         return redirect()->route('admin.users.index')->with('success', 'User berhasil dihapus');
     }
