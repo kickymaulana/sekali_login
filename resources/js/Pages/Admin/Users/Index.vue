@@ -5,6 +5,7 @@ import { Snackbar, Dialog } from '@varlet/ui'
 
 interface UserItem {
   id: number
+  nik: string | null
   name: string
   email: string
   roles: { name: string }[]
@@ -84,6 +85,7 @@ const confirmDelete = (user: UserItem) => {
           <thead>
             <tr>
               <th>Nama</th>
+              <th>NIK</th>
               <th>Email</th>
               <th>Role SSO</th>
               <th style="text-align: right">Aksi</th>
@@ -92,6 +94,7 @@ const confirmDelete = (user: UserItem) => {
           <tbody>
             <tr v-for="user in users.data" :key="user.id">
               <td class="font-bold">{{ user.name }}</td>
+              <td>{{ user.nik || '-' }}</td>
               <td>{{ user.email }}</td>
               <td>
                 <var-chip size="small" type="info" v-for="role in user.roles" :key="role.name">
@@ -103,7 +106,7 @@ const confirmDelete = (user: UserItem) => {
               </td>
             </tr>
             <tr v-if="!users.data.length">
-              <td colspan="4" class="empty-row">
+              <td colspan="5" class="empty-row">
                 <div class="empty-state">
                   <var-icon name="account-off" :size="36" color="#cbd5e1" />
                   <p>Belum ada pengguna terdaftar.</p>
