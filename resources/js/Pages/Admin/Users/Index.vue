@@ -21,7 +21,7 @@ const props = defineProps<{
 const searchVal = ref(props.filters?.search || '')
 
 const previewAvatar = (user: UserItem) => {
-  if (user.avatar_url) ImagePreview(user.avatar_url)
+  if (user.avatar_url) ImagePreview({ images: [user.avatar_url], closeable: true })
 }
 
 const search = () => {
