@@ -1,13 +1,14 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { Head, Link, router } from '@inertiajs/vue3'
-import { Snackbar, Dialog } from '@varlet/ui'
+import { Snackbar, Dialog, ImagePreview } from '@varlet/ui'
 
 interface UserItem {
   id: number
   nik: string | null
   name: string
   email: string
+  avatar_url: string | null
   roles: { name: string }[]
 }
 
@@ -18,6 +19,10 @@ const props = defineProps<{
 }>()
 
 const searchVal = ref(props.filters?.search || '')
+
+const previewAvatar = (user: UserItem) => {
+  if (user.avatar_url) ImagePreview(user.avatar_url)
+}
 
 const search = () => {
   router.get(route('admin.users.index'), { search: searchVal.value || undefined }, { preserveState: true })
@@ -84,6 +89,7 @@ const confirmDelete = (user: UserItem) => {
         <var-table>
           <thead>
             <tr>
+              <th>Foto</th>
               <th>Nama</th>
               <th>NIK</th>
               <th>Email</th>
@@ -93,6 +99,12 @@ const confirmDelete = (user: UserItem) => {
           </thead>
           <tbody>
             <tr v-for="user in users.data" :key="user.id">
+              <td>
+                <button v-if="user.avatar_url" class="avatar-button" @click="previewAvatar(user)">
+                  <img :src="user.avatar_url" :alt="`Foto ${user.name}`" class="avatar-image" />
+                </button>
+                <div v-else class="avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div>
+              </td>
               <td class="font-bold">{{ user.name }}</td>
               <td>{{ user.nik || '-' }}</td>
               <td>{{ user.email }}</td>
@@ -106,7 +118,7 @@ const confirmDelete = (user: UserItem) => {
               </td>
             </tr>
             <tr v-if="!users.data.length">
-              <td colspan="5" class="empty-row">
+              <td colspan="6" class="empty-row">
                 <div class="empty-state">
                   <var-icon name="account-off" :size="36" color="#cbd5e1" />
                   <p>Belum ada pengguna terdaftar.</p>
@@ -138,6 +150,36 @@ const confirmDelete = (user: UserItem) => {
 </template>
 
 <style scoped>
+.avatar-button {
+  display: block;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.avatar-image,
+.avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.avatar-image {
+  display: block;
+  object-fit: cover;
+}
+
+.avatar-placeholder {
+  display: grid;
+  place-items: center;
+  background: #e0e7ff;
+  color: #4338ca;
+  font-size: 14px;
+  font-weight: 700;
+}
+
 .android-layout {
   display: flex;
   flex-direction: column;

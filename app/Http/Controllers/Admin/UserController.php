@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Spatie\Permission\Models\Role;
 
@@ -26,7 +27,11 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->latest()->paginate(10)->withQueryString();
+        $users = $query->latest()->paginate(10)->withQueryString()
+            ->through(fn (User $user) => [
+                ...$user->toArray(),
+                'avatar_url' => $user->avatar_path ? URL::temporarySignedRoute('profile.avatar.public', now()->addMinutes(5), ['user' => $user]) : null,
+            ]);
         $roles = Role::pluck('name');
 
         return Inertia::render('Admin/Users/Index', [
