@@ -50,7 +50,7 @@ const submit = () => {
         <div class="field">
           <label>NIK (Nomor Induk Karyawan) BUKAN KTP <span class="req">*</span></label>
           <div class="input-wrap">
-            <input v-model="form.nik" placeholder="Masukkan NIK karyawan" class="input" />
+            <input v-model="form.nik" placeholder="Masukkan NIK karyawan" maxlength="8" class="input" />
           </div>
           <span v-if="form.errors.nik" class="error">{{ form.errors.nik }}</span>
         </div>
